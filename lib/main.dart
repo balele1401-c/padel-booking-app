@@ -9,6 +9,7 @@ import 'features/auth/login_screen.dart';
 import 'features/customer/home/customer_home_screen.dart';
 import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
+import 'providers/booking_provider.dart';
 import 'providers/court_provider.dart';
 
 void main() async {
@@ -28,6 +29,7 @@ class PadelBookingApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => CourtProvider()),
+        ChangeNotifierProvider(create: (_) => BookingProvider()),
       ],
       child: MaterialApp(
         title: AppConstants.appName,

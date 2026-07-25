@@ -5,6 +5,8 @@ import '../../../core/utils/currency_formatter.dart';
 import '../../../models/court_model.dart';
 import '../../../shared/widgets/custom_button.dart';
 
+import 'booking_slot_screen.dart';
+
 class CourtDetailScreen extends StatelessWidget {
   final CourtModel court;
 
@@ -245,10 +247,10 @@ class CourtDetailScreen extends StatelessWidget {
             text: 'Booking Sekarang',
             icon: Icons.calendar_month,
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Memilih jadwal untuk ${court.name}...'),
-                  backgroundColor: AppColors.primary,
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => BookingSlotScreen(court: court),
                 ),
               );
             },
