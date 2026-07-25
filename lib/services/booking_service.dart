@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import '../models/booking_model.dart';
 
 class BookingService {
@@ -75,50 +76,103 @@ class BookingService {
     return true;
   }
 
-  /// Create booking with Firestore Transaction to prevent double-booking
+  /// Helper to get previous 1-hour slot string (e.g. "08:00" -> "07:00")
+  String? _getPreviousHour(String timeStr) {
+    try {
+      final hour = int.parse(timeStr.split(':')[0]);
+      if (hour <= 0) return null;
+      return '${(hour - 1).toString().padLeft(2, '0')}:00';
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Helper to get next 1-hour slot string (e.g. "08:00" -> "09:00")
+  String? _getNextHour(String timeStr) {
+    try {
+      final hour = int.parse(timeStr.split(':')[0]);
+      return '${(hour + 1).toString().padLeft(2, '0')}:00';
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Create booking with Firestore Transaction to prevent double-booking.
+  /// Uses transaction.get() on slot document references to comply with Firestore Web SDK requirements.
   Future<String> createBookingWithTransaction(BookingModel booking) async {
-    return await _firestore.runTransaction((transaction) async {
-      final startOfDay = DateTime(
-        booking.bookingDate.year,
-        booking.bookingDate.month,
-        booking.bookingDate.day,
-      );
-      final endOfDay = DateTime(
-        booking.bookingDate.year,
-        booking.bookingDate.month,
-        booking.bookingDate.day,
-        23,
-        59,
-        59,
-      );
+    final formattedDate =
+        "${booking.bookingDate.year}-${booking.bookingDate.month.toString().padLeft(2, '0')}-${booking.bookingDate.day.toString().padLeft(2, '0')}";
+    final primaryDocId = "${booking.courtId}_${formattedDate}_${booking.startTime}";
+    final primaryDocRef = _bookingsCollection.doc(primaryDocId);
 
-      final existingBookingsQuery = await _bookingsCollection
-          .where('courtId', isEqualTo: booking.courtId)
-          .where('tanggal', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
-          .where('tanggal', isLessThanOrEqualTo: Timestamp.fromDate(endOfDay))
-          .where('status', whereIn: ['pending', 'confirmed'])
-          .get();
+    // List of slot document references to check inside transaction.get()
+    final List<DocumentReference> docsToCheck = [primaryDocRef];
 
-      final reqStart = booking.startTime;
-      final reqEnd = booking.endTime;
+    // Check previous hour slot (in case an existing 2-hour booking started 1 hour earlier)
+    final prevHour = _getPreviousHour(booking.startTime);
+    if (prevHour != null) {
+      docsToCheck.add(_bookingsCollection.doc("${booking.courtId}_${formattedDate}_$prevHour"));
+    }
 
-      for (final doc in existingBookingsQuery.docs) {
-        final existing = BookingModel.fromFirestore(doc);
-        final existStart = existing.startTime;
-        final existEnd = existing.endTime;
-
-        // Overlap check between [reqStart, reqEnd) and [existStart, existEnd)
-        // Two intervals overlap if reqStart < existEnd AND reqEnd > existStart
-        if (reqStart.compareTo(existEnd) < 0 && reqEnd.compareTo(existStart) > 0) {
-          throw Exception('Slot sudah terambil orang lain');
-        }
+    // If requested booking is 2 hours, check the next hour slot as well
+    if (booking.durationHours > 1) {
+      final nextHour = _getNextHour(booking.startTime);
+      if (nextHour != null) {
+        docsToCheck.add(_bookingsCollection.doc("${booking.courtId}_${formattedDate}_$nextHour"));
       }
+    }
 
-      final newDocRef = _bookingsCollection.doc();
-      transaction.set(newDocRef, booking.copyWith(id: newDocRef.id).toFirestore());
+    try {
+      return await _firestore.runTransaction((transaction) async {
+        // Reads inside transaction MUST use transaction.get(docRef)
+        final List<DocumentSnapshot> snapshots = [];
+        for (final docRef in docsToCheck) {
+          final snap = await transaction.get(docRef);
+          snapshots.add(snap);
+        }
 
-      return newDocRef.id;
-    });
+        // 1. Check primary slot document
+        final primarySnap = snapshots[0];
+        if (primarySnap.exists) {
+          final data = primarySnap.data() as Map<String, dynamic>? ?? {};
+          final status = data['status'];
+          if (status == 'pending' || status == 'confirmed') {
+            throw Exception('Slot sudah terambil orang lain');
+          }
+        }
+
+        // 2. Check previous hour slot document (if duration was 2 hours)
+        if (snapshots.length > 1 && snapshots[1].exists) {
+          final data = snapshots[1].data() as Map<String, dynamic>? ?? {};
+          final status = data['status'];
+          final duration = (data['durasi_jam'] ?? 1) as num;
+          if ((status == 'pending' || status == 'confirmed') && duration >= 2) {
+            throw Exception('Slot sudah terambil orang lain');
+          }
+        }
+
+        // 3. Check next hour slot document (if requesting 2 hours)
+        if (booking.durationHours > 1 && snapshots.length > 2 && snapshots[2].exists) {
+          final data = snapshots[2].data() as Map<String, dynamic>? ?? {};
+          final status = data['status'];
+          if (status == 'pending' || status == 'confirmed') {
+            throw Exception('Slot sudah terambil orang lain');
+          }
+        }
+
+        // Save booking document with deterministic slot ID
+        final bookingData = booking.copyWith(id: primaryDocId).toFirestore();
+        transaction.set(primaryDocRef, bookingData);
+
+        return primaryDocId;
+      });
+    } on FirebaseException catch (e) {
+      debugPrint('❌ [BookingService] FirebaseException: code=${e.code}, message=${e.message}');
+      throw Exception(e.message ?? 'Gagal memproses transaksi Firestore (${e.code})');
+    } catch (e) {
+      debugPrint('❌ [BookingService] Exception: $e');
+      rethrow;
+    }
   }
 
   /// Update booking status ('confirmed', 'cancelled', 'completed')

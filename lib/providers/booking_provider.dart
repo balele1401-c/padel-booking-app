@@ -35,11 +35,28 @@ class BookingProvider extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
       return bookingId;
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('❌ [BookingProvider] Exception in createBooking: $e');
+      debugPrint('❌ [BookingProvider] StackTrace: $stackTrace');
+
       _isLoading = false;
-      _errorMessage = e.toString().replaceAll('Exception: ', '');
+      _errorMessage = _parseErrorMessage(e);
       notifyListeners();
       return null;
     }
+  }
+
+  String _parseErrorMessage(dynamic e) {
+    final str = e.toString();
+    if (str.contains('Slot sudah terambil')) {
+      return 'Slot sudah terambil orang lain';
+    }
+    if (str.contains('permission-denied') || str.contains('PERMISSION_DENIED')) {
+      return 'Izin ditolak oleh Firestore Security Rules.';
+    }
+    if (str.contains('Exception: ')) {
+      return str.replaceAll('Exception: ', '');
+    }
+    return str;
   }
 }
