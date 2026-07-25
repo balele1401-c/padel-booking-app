@@ -3,7 +3,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../../models/booking_model.dart';
 import '../../../shared/widgets/custom_button.dart';
-import '../home/customer_home_screen.dart';
+import '../customer_main_screen.dart';
 
 class PaymentSuccessScreen extends StatelessWidget {
   final BookingModel booking;
@@ -160,7 +160,7 @@ class PaymentSuccessScreen extends StatelessWidget {
                 icon: Icons.home,
                 onPressed: () {
                   Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (context) => const CustomerHomeScreen()),
+                    MaterialPageRoute(builder: (context) => const CustomerMainScreen()),
                     (route) => false,
                   );
                 },

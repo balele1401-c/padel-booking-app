@@ -7,7 +7,7 @@ import 'core/constants/app_constants.dart';
 import 'core/theme/app_theme.dart';
 import 'features/admin/dashboard/admin_dashboard_screen.dart';
 import 'features/auth/login_screen.dart';
-import 'features/customer/home/customer_home_screen.dart';
+import 'features/customer/customer_main_screen.dart';
 import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
 import 'providers/booking_provider.dart';
@@ -83,8 +83,8 @@ class AuthWrapper extends StatelessWidget {
           return const AdminDashboardScreen();
         }
 
-        // Default: Logged in as Customer -> Customer Home Screen
-        return const CustomerHomeScreen();
+        // Default: Logged in as Customer -> Customer Main Screen (4 tabs)
+        return const CustomerMainScreen();
       },
     );
   }
