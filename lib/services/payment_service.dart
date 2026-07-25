@@ -42,4 +42,74 @@ class PaymentService {
       'status': status,
     });
   }
+
+  /// Process successful payment:
+  /// 1. Save payment record to collection "payments" with status "success"
+  /// 2. Update booking in collection "bookings" with status "confirmed" & payment_status "paid"
+  Future<String> processPaymentSuccess({
+    required String bookingId,
+    required String userId,
+    required String method,
+    required double amount,
+    String? snapToken,
+  }) async {
+    final paymentDocRef = _paymentsCollection.doc();
+    final paymentModel = PaymentModel(
+      id: paymentDocRef.id,
+      bookingId: bookingId,
+      userId: userId,
+      method: method,
+      status: 'success',
+      amount: amount,
+      transactionTime: DateTime.now(),
+      snapToken: snapToken,
+    );
+
+    final batch = _firestore.batch();
+    
+    // Save to payments collection
+    batch.set(paymentDocRef, paymentModel.toFirestore());
+
+    // Update bookings collection
+    final bookingDocRef = _firestore.collection('bookings').doc(bookingId);
+    batch.update(bookingDocRef, {
+      'status': 'confirmed',
+      'payment_status': 'paid',
+      'payment_id': paymentDocRef.id,
+    });
+
+    await batch.commit();
+    return paymentDocRef.id;
+  }
+
+  /// Process failed/cancelled payment
+  Future<void> processPaymentFailure({
+    required String bookingId,
+    required String userId,
+    required String method,
+    required double amount,
+    String status = 'failed',
+  }) async {
+    final paymentDocRef = _paymentsCollection.doc();
+    final paymentModel = PaymentModel(
+      id: paymentDocRef.id,
+      bookingId: bookingId,
+      userId: userId,
+      method: method,
+      status: status,
+      amount: amount,
+      transactionTime: DateTime.now(),
+    );
+
+    final batch = _firestore.batch();
+
+    batch.set(paymentDocRef, paymentModel.toFirestore());
+
+    final bookingDocRef = _firestore.collection('bookings').doc(bookingId);
+    batch.update(bookingDocRef, {
+      'payment_status': status,
+    });
+
+    await batch.commit();
+  }
 }

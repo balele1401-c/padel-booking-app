@@ -43,3 +43,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Midtrans Secret Credentials (DO NOT COMMIT)
+lib/core/config/midtrans_config.dart
+
