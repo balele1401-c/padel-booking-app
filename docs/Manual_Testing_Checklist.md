@@ -1,4 +1,4 @@
-# Checklist Testing Manual & Review UX/UI Aplikasi Padel Booking 🎾📋
+# 📋 Checklist Testing Manual & Review UX/UI Aplikasi Padel Booking 🎾
 
 Dokumen ini berisi panduan pengujian manual menyeluruh (*end-to-end testing checklist*) dan review UX/UI untuk persiapan demo sidang skripsi / wawancara kerja teknis.
 
@@ -9,54 +9,64 @@ Dokumen ini berisi panduan pengujian manual menyeluruh (*end-to-end testing chec
 | Komponen UX/UI | Kriteria Kelayakan | Status Review |
 |---|---|---|
 | **Sistem Warna** | Midnight Teal (`#0D5C5B`), Emerald Green (`#00A86B`), Dark Slate Gray (`#1A252C`), & Light Surface (`#F4F7F6`). | ✅ Konsisten di 100% Layar |
-| **Tipografi** | Judul Bold Proposional, Body Text legibel dengan kontras tinggi (WCG AAA Compliant). | ✅ Konsisten di 100% Layar |
+| **Tipografi** | Judul Bold Proposional, Body Text legibel dengan kontras tinggi (WCAG AAA Compliant). | ✅ Konsisten di 100% Layar |
 | **Loading State** | `CircularProgressIndicator` bergradien & Skeleton Loader saat mengambil data Firestore real-time. | ✅ Terpasang di semua Stream & Future |
 | **Empty State** | Pesan & Ilustrasi yang ramah ketika data kosong (misal: *Belum Ada Booking*, *Tidak Ada Pembayaran*). | ✅ Terpasang di semua List Screen |
 | **Error Handling** | Floating Snackbar / Error Card yang informatif jika koneksi gagal atau izin ditolak. | ✅ Terpasang di Auth, Booking, & Admin |
 
 ---
 
-## 🧪 2. Checklist Testing Manual Skenario Demo
+## 🧪 2. CHECKLIST TESTING MANUAL Skenario Demo
 
-### A. Alur Otentikasi (Auth & Role Management)
-- [x] **Registrasi Akun Baru**: Buat akun customer baru dengan email & kata sandi valid.
-- [x] **Validasi Form Auth**: Pastikan error tampil jika email salah format atau kata sandi < 6 karakter.
-- [x] **Login Customer**: Login akun customer ➔ Masuk ke **Customer Bottom Navigation (4 Tab)**.
-- [x] **Login Admin**: Login akun `superadmin@gmail.com` ➔ Masuk ke **Admin Dashboard Analytics**.
-- [x] **Role Guard**: Pastikan customer tidak bisa mengakses halaman admin secara paksa.
+### 1. 🔑 Modul Otentikasi & Akun (Auth & Role Access)
+- [ ] **Registrasi Customer**: Daftar akun baru (nama, email, kata sandi, no HP) ➔ Data tersimpan di Firestore `/users` dengan `role: 'customer'`.
+- [ ] **Validasi Form Auth**: Cek pesan peringatan saat email tidak sesuai format atau kata sandi < 6 karakter.
+- [ ] **Login Customer**: Login akun customer ➔ Diarahkan ke **Customer Main Screen (4 Tab)**.
+- [ ] **Login Admin**: Login akun `superadmin@gmail.com` ➔ Diarahkan ke **Admin Dashboard Analytics**.
+- [ ] **Proteksi Role Guard**: Akun customer yang mencoba membuka halaman Admin tidak diberikan akses.
+- [ ] **Logout**: Mengklik tombol Logout di profil/dashboard berhasil mengembalikan ke halaman Login.
 
-### B. Alur Customer Booking & Slot Selector
-- [x] **Melihat Daftar Lapangan (Home)**: Tampilan card lapangan berfoto, badge harga, dan status aktif.
-- [x] **Detail Lapangan**: Informasi spesifikasi lapangan, fasilitas (shower, loker, lampu), dan jam operasional.
-- [x] **Slot Time Selector**:
-  - Slot waktu terisi (merah / rose badge `DIBOOKING`) tidak bisa diklik.
-  - Slot maintenance (slate gray badge `DIBLOKIR 🔒`) tidak bisa diklik.
-  - Slot kosong (teal badge) dapat dipilih untuk durasi 1 Jam atau 2 Jam.
-- [x] **Ringkasan Pemesanan**: Menampilkan tanggal main, rincian jam, durasi, total harga, dan data customer.
+### 2. 🎾 Modul Customer — Pemesanan & Slot Selector
+- [ ] **Tab Home (Daftar Lapangan)**: Memuat seluruh daftar lapangan padel aktif dari Firestore (foto, nama, harga/jam, jam operasional).
+- [ ] **Detail Lapangan**: Membuka halaman detail lapangan menampilkan deskripsi & fasilitas (shower, loker, lampu).
+- [ ] **Slot Time Selector**:
+  - [ ] **Slot Kosong (Badge Teal)**: Dapat diklik & dipilih untuk durasi 1 Jam atau 2 Jam.
+  - [ ] **Slot Terisi (Badge Rose - DIBOOKING)**: Terkunci dan tidak bisa diklik.
+  - [ ] **Slot Maintenance (Badge Slate - DIBLOKIR 🔒)**: Terkunci dan tidak bisa diklik.
+- [ ] **Ringkasan Pemesanan**: Menampilkan tanggal main, jam bermain, durasi, total biaya, dan nama customer.
 
-### C. Alur Pembayaran Midtrans Snap
-- [x] **Sandbox Payment Gateway**: Integrasi dialog Midtrans Snap (QRIS Instan & Virtual Account).
-- [x] **Proses Bayar Lunas**: Simulasi bayar sukses ➔ Struk **"Pembayaran Berhasil!"** tampil.
-- [x] **Perubahan Status Real-Time**: Status booking otomatis berubah dari `PENDING` ➔ `CONFIRMED` & `PAID`.
+### 3. 💳 Modul Pembayaran Midtrans Snap Gateway
+- [ ] **Inisialisasi Snap**: Mengklik **Konfirmasi Booking** ➔ Dialog Midtrans Snap Sandbox berhasil terbuka.
+- [ ] **Simulasi Pembayaran QRIS / VA**: Memilih metode pembayaran ➔ Mengklik simulasi bayar sukses.
+- [ ] **Struk Bukti Pembayaran**: Halaman **"Pembayaran Berhasil!"** tampil dengan rincian transaksi verified.
+- [ ] **Perubahan Status Real-Time**: Status booking otomatis berubah dari `PENDING` ➔ `CONFIRMED` & `PAID`.
 
-### D. Alur Riwayat Booking & Pembatalan (H-1)
-- [x] **Tab Riwayat (Upcoming vs History)**: Menampilkan daftar booking aktif dan lampau.
-- [x] **Detail Bottom Sheet**: Menampilkan ID booking unik, rincian pembayaran, dan tombol aksi.
-- [x] **Pembatalan H-1**: Tombol pembatalan aktif hanya untuk H-1 (24 jam sebelum main). Pembatalan kurang dari 24 jam dicegah dengan pesan peringatan.
+### 4. 📜 Modul Riwayat Pemesanan & Pembatalan H-1
+- [ ] **Tab Upcoming**: Menampilkan daftar booking aktif yang akan datang.
+- [ ] **Tab History**: Menampilkan daftar booking lampau/selesai.
+- [ ] **Detail Modal Bottom Sheet**: Mengklik item booking menampilkan ID unik booking, total biaya, dan status pembayaran `PAID`.
+- [ ] **Aturan Pembatalan H-1**:
+  - [ ] Pembatalan pada jadwal minimal H-1 (>= 24 jam) berhasil membatalkan booking (status `CANCELLED`).
+  - [ ] Pembatalan pada jadwal kurang dari 24 jam dicegah dengan pesan peringatan kebijakan operasional.
 
-### E. AI Chatbot Assistant (Smart Firestore Engine)
-- [x] **Tanya Slot & Operasional**: Chatbot menjawab jumlah slot terisi hari ini & jam operasional real-time.
-- [x] **Tanya Harga Sewa**: Chatbot menampilkan daftar harga sewa per jam terbaru dari Firestore.
-- [x] **Tanya Pembayaran & Aturan**: Chatbot menjelaskan metode Midtrans & aturan main padel.
-- [x] **Penyaringan Scope (Out-of-Scope)**: Pertanyaan di luar booking otomatis diarahkan ke Admin CS WhatsApp (`0812-3456-7890`).
+### 5. 🤖 Modul AI Chatbot Assistant (Smart Firestore Engine)
+- [ ] **Pertanyaan Jam & Slot**: Chatbot menjawab jam operasional & jumlah slot terisi hari ini langsung dari Firestore.
+- [ ] **Pertanyaan Harga Sewa**: Chatbot menampilkan daftar harga sewa per jam terbaru dari Firestore.
+- [ ] **Pertanyaan Aturan Padel**: Chatbot menjelaskan sistem skor 15-30-40, underhand serve, & bola dinding kaca.
+- [ ] **Out-of-Scope Redirection**: Pertanyaan di luar topik booking (misal: *resep masakan/coding*) otomatis ditolak dan diarahkan ke WhatsApp Admin CS (`0812-3456-7890`).
 
-### F. Panel Admin (Kelola Lapangan, Booking, & Pembayaran)
-- [x] **Dashboard Analytics**: Kartu ringkasan 2 kolom (Total Booking Hari ini, Minggu ini, Bulan ini, & Total Revenue) + Grafik Bar Chart Okupansi `fl_chart`.
-- [x] **Kelola Lapangan (CRUD)**: Admin bisa Menambah, Mengedit, dan Menghapus lapangan padel.
-- [x] **Kelola Booking & Filter**: Filter berdasarkan tanggal (Date Picker) dan status chip (`Semua`, `Pending`, `Confirmed`, `Cancelled`, `Diblokir`).
-- [x] **Blokir Slot Maintenance**: Modal dialog blokir slot maintenance meletakkan entry `status: 'blocked'`.
-- [x] **Konfirmasi / Penolakan Manual**: Admin dapat mengonfirmasi atau menolak booking secara manual.
-- [x] **Laporan Transaksi Pembayaran**: Halaman riwayat transaksi dari collection `payments` dengan rincian status `SUCCESS`, `PENDING`, `EXPIRED`, atau `FAILED`.
+### 6. 👑 Modul Panel Admin (Dashboard, Booking, Payment, & Court Management)
+- [ ] **Dashboard Analytics**: Ringkasan metrics 2-kolom (Booking Hari Ini, Minggu Ini, Bulan Ini, Total Revenue) + Grafik Bar Chart Okupansi `fl_chart`.
+- [ ] **Kelola Lapangan (CRUD)**: Admin dapat Menambah, Mengedit, dan Menghapus lapangan padel.
+- [ ] **Kelola Seluruh Booking**:
+  - [ ] **Filter Tanggal (Date Picker)**: Memfilter booking berdasarkan tanggal tertentu.
+  - [ ] **Status Filter Chips**: Memfilter berdasarkan `Semua`, `Pending`, `Confirmed`, `Cancelled`, `Diblokir`.
+  - [ ] **Konfirmasi / Penolakan Manual**: Mengklik tombol konfirmasi manual berfungsi mengubah status booking.
+- [ ] **Blokir Slot Maintenance**:
+  - [ ] Mengklik **Blokir Slot** ➔ Memilih lapangan, tanggal, & jam.
+  - [ ] Entry `status: 'blocked'` tercipta ➔ Slot jam tersebut di customer otomatis terkunci (`DIBLOKIR 🔒`).
+  - [ ] Mengklik **Buka Blokir** pada Admin berhasil menghapus entri maintenance.
+- [ ] **Kelola Pembayaran (`AdminPaymentListScreen`)**: Menampilkan daftar riwayat transaksi dari collection `payments` lengkap dengan status `SUCCESS`, nominal, dan detail transaksi.
 
 ---
 
