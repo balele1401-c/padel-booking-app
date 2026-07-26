@@ -46,11 +46,16 @@ service cloud.firestore {
         request.resource.data.userId == request.auth.uid || isAdmin()
       );
 
-      // Update access: Customer can ONLY cancel their own booking, Admin can update status/anything
+      // Update access:
+      // - Customer can cancel their own booking ('cancelled')
+      // - Customer can confirm their own booking upon payment ('confirmed' & 'paid')
+      // - Admin can update any booking field
       allow update: if isAdmin() || (
         resource != null &&
-        isOwner(resource.data.userId) &&
-        request.resource.data.status == 'cancelled'
+        isOwner(resource.data.userId) && (
+          request.resource.data.status == 'cancelled' ||
+          (request.resource.data.status == 'confirmed' && request.resource.data.payment_status == 'paid')
+        )
       );
 
       // Delete access: Admin only (for unblocking maintenance slots)
