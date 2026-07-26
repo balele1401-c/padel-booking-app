@@ -1,0 +1,74 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─── Helper Functions ──────────────────────────────────────────────────
+    
+    // Check if user is authenticated
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Check if request user matches document owner
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Check if user has Admin role in /users collection
+    function isAdmin() {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // ─── 1. Users Collection ────────────────────────────────────────────────
+    match /users/{userId} {
+      // Customer can read and write only their own document
+      allow read, update: if isOwner(userId) || isAdmin();
+      allow create: if isSignedIn();
+      allow delete: if isAdmin();
+    }
+
+    // ─── 2. Courts Collection ───────────────────────────────────────────────
+    match /courts/{courtId} {
+      // Public read access for court listings and prices
+      allow read: if true;
+      
+      // Write operations (create, update, delete) restricted to Admin
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ─── 3. Bookings Collection ─────────────────────────────────────────────
+    match /bookings/{bookingId} {
+      // Read access: User can read their own bookings; Admin can read all bookings
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+
+      // Create access: Signed-in user creating a booking for themselves with initial 'pending' status
+      allow create: if isSignedIn() && (
+        request.resource.data.userId == request.auth.uid || isAdmin()
+      );
+
+      // Update access:
+      // - Customer can ONLY cancel their own booking (cannot change status to confirmed/completed)
+      // - Admin can update any booking field (confirm, cancel, mark completed, block slot)
+      allow update: if isAdmin() || (
+        isOwner(resource.data.userId) &&
+        request.resource.data.status == 'cancelled' &&
+        request.resource.data.payment_status == resource.data.payment_status
+      );
+
+      // Delete access: Admin only (for unblocking maintenance slots)
+      allow delete: if isAdmin();
+    }
+
+    // ─── 4. Payments Collection ─────────────────────────────────────────────
+    match /payments/{paymentId} {
+      // User can read their own payment receipt; Admin can read all payments
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      
+      // Create and Update: Admin or authenticated client processing Midtrans payment
+      allow create, update: if isSignedIn();
+      allow delete: if isAdmin();
+    }
+  }
+}
