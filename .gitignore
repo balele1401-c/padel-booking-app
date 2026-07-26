@@ -44,6 +44,10 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# Midtrans Secret Credentials (DO NOT COMMIT)
+# Sensitive Credentials & Config Files (DO NOT COMMIT TO GITHUB)
 lib/core/config/midtrans_config.dart
+android/app/google-services.json
+lib/firebase_options.dart
+ios/Runner/GoogleService-Info.plist
+
 
