@@ -46,6 +46,12 @@ class BookingModel {
       dateVal = DateTime.parse(data['tanggal']);
     }
 
+    final statusVal = data['status'] ?? 'pending';
+    final paymentStatusVal = data['payment_status'] ??
+        data['paymentStatus'] ??
+        data['status_pembayaran'] ??
+        ((statusVal == 'confirmed' || statusVal == 'completed') ? 'paid' : 'pending');
+
     return BookingModel(
       id: doc.id,
       userId: data['userId'] ?? '',
@@ -55,10 +61,10 @@ class BookingModel {
       startTime: data['jam_mulai'] ?? '00:00',
       endTime: data['jam_selesai'] ?? '00:00',
       durationHours: data['durasi_jam'] ?? 1,
-      status: data['status'] ?? 'pending',
+      status: statusVal,
       totalPrice: (data['total_harga'] ?? 0).toDouble(),
-      paymentStatus: data['payment_status'] ?? 'pending',
-      paymentId: data['payment_id'],
+      paymentStatus: paymentStatusVal,
+      paymentId: data['payment_id'] ?? data['snap_token'],
       createdAt: data['created_at'] != null
           ? (data['created_at'] as Timestamp).toDate()
           : null,

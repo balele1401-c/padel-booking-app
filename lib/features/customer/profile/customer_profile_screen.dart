@@ -71,7 +71,7 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Profil berhasil diperbarui! Silakan refresh jika perlu.'),
+          content: Text('Profil berhasil diperbarui!'),
           backgroundColor: AppColors.primary,
         ),
       );
@@ -96,9 +96,15 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text('Konfirmasi Logout', style: TextStyle(fontWeight: FontWeight.bold)),
-          content: const Text('Apakah Anda yakin ingin keluar dari aplikasi?'),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Row(
+            children: [
+              Icon(Icons.logout_rounded, color: AppColors.error, size: 24),
+              SizedBox(width: 10),
+              Text('Konfirmasi Logout', style: TextStyle(fontWeight: FontWeight.bold)),
+            ],
+          ),
+          content: const Text('Apakah Anda yakin ingin keluar dari akun ini?'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
@@ -107,13 +113,13 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.error,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
               onPressed: () {
                 Navigator.of(dialogContext).pop();
                 authProvider.logout();
               },
-              child: const Text('Keluar', style: TextStyle(color: Colors.white)),
+              child: const Text('Ya, Keluar', style: TextStyle(color: Colors.white)),
             ),
           ],
         );
@@ -129,11 +135,17 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Profil Pengguna'),
+        title: const Text(
+          'Profil Saya',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        ),
         centerTitle: true,
+        backgroundColor: AppColors.primaryDark,
+        foregroundColor: Colors.white,
+        elevation: 0,
         actions: [
           IconButton(
-            icon: Icon(_isEditing ? Icons.close : Icons.edit),
+            icon: Icon(_isEditing ? Icons.close_rounded : Icons.edit_rounded, color: Colors.white),
             tooltip: _isEditing ? 'Batal Edit' : 'Edit Profil',
             onPressed: () {
               setState(() {
@@ -152,22 +164,55 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
           padding: const EdgeInsets.all(20.0),
           child: Column(
             children: [
-              const SizedBox(height: 10),
-              // Profile Avatar Header Card
-              Center(
+              // Hero Profile Avatar Banner Card
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AppColors.primaryDark, AppColors.primary],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(22),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primaryDark.withValues(alpha: 0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
                 child: Column(
                   children: [
-                    CircleAvatar(
-                      radius: 44,
-                      backgroundColor: AppColors.primary,
-                      child: Text(
-                        (user?.name.isNotEmpty ?? false) ? user!.name[0].toUpperCase() : 'P',
-                        style: const TextStyle(
-                          fontSize: 36,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                    Stack(
+                      alignment: Alignment.bottomRight,
+                      children: [
+                        CircleAvatar(
+                          radius: 44,
+                          backgroundColor: Colors.white,
+                          child: CircleAvatar(
+                            radius: 41,
+                            backgroundColor: AppColors.primaryDark,
+                            child: Text(
+                              (user?.name.isNotEmpty ?? false) ? user!.name[0].toUpperCase() : 'P',
+                              style: const TextStyle(
+                                fontSize: 36,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
+                        Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: Colors.amber,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.bolt_rounded, size: 16, color: Colors.black),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 12),
                     Text(
@@ -175,96 +220,151 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
+                        color: Colors.white,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       user?.email ?? '',
-                      style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                      style: const TextStyle(fontSize: 13, color: Colors.white70),
+                    ),
+                    const SizedBox(height: 10),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.emoji_events_rounded, size: 14, color: Colors.amber),
+                          SizedBox(width: 4),
+                          Text(
+                            'MEMBER TERVERIFIKASI',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 24),
 
-              // Profile Form Details Card
-              Card(
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  side: const BorderSide(color: AppColors.border),
+              // Profile Details Info Form Card
+              Container(
+                padding: const EdgeInsets.all(18.0),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: AppColors.border),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(18.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('Informasi Akun', style: AppTextStyles.subheading),
-                      const SizedBox(height: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Informasi Akun', style: AppTextStyles.subheading),
+                    const SizedBox(height: 16),
 
-                      // Name Field
-                      const Text('Nama Lengkap', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                      const SizedBox(height: 6),
-                      _isEditing
-                          ? TextField(
-                              controller: _nameController,
-                              decoration: InputDecoration(
-                                hintText: 'Masukkan nama lengkap',
-                                prefixIcon: const Icon(Icons.person_outline, size: 20),
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                              ),
-                            )
-                          : _buildInfoTile(Icons.person_outline, user?.name ?? '-'),
+                    // Name Field
+                    const Text('Nama Lengkap', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                    const SizedBox(height: 6),
+                    _isEditing
+                        ? TextField(
+                            controller: _nameController,
+                            decoration: InputDecoration(
+                              hintText: 'Masukkan nama lengkap',
+                              prefixIcon: const Icon(Icons.person_outline_rounded, size: 20),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                          )
+                        : _buildInfoTile(Icons.person_outline_rounded, user?.name ?? '-'),
 
-                      const SizedBox(height: 16),
+                    const SizedBox(height: 16),
 
-                      // Email Field (Read Only)
-                      const Text('Email', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                      const SizedBox(height: 6),
-                      _buildInfoTile(Icons.email_outlined, user?.email ?? '-'),
+                    // Email Field (Read Only)
+                    const Text('Email', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                    const SizedBox(height: 6),
+                    _buildInfoTile(Icons.email_outlined, user?.email ?? '-', isReadOnly: true),
 
-                      const SizedBox(height: 16),
+                    const SizedBox(height: 16),
 
-                      // Phone Field
-                      const Text('Nomor Telepon', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                      const SizedBox(height: 6),
-                      _isEditing
-                          ? TextField(
-                              controller: _phoneController,
-                              keyboardType: TextInputType.phone,
-                              decoration: InputDecoration(
-                                hintText: 'Masukkan nomor HP',
-                                prefixIcon: const Icon(Icons.phone_outlined, size: 20),
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                              ),
-                            )
-                          : _buildInfoTile(Icons.phone_outlined, (user?.phoneNumber.isNotEmpty ?? false) ? user!.phoneNumber : 'Belum diisi'),
-                    ],
-                  ),
+                    // Phone Field
+                    const Text('Nomor Telepon', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                    const SizedBox(height: 6),
+                    _isEditing
+                        ? TextField(
+                            controller: _phoneController,
+                            keyboardType: TextInputType.phone,
+                            decoration: InputDecoration(
+                              hintText: 'Masukkan nomor HP',
+                              prefixIcon: const Icon(Icons.phone_outlined, size: 20),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                          )
+                        : _buildInfoTile(Icons.phone_outlined, (user?.phoneNumber.isNotEmpty ?? false) ? user!.phoneNumber : 'Belum diisi'),
+                  ],
                 ),
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
 
               // Save Edit Button
               if (_isEditing && user != null) ...[
                 CustomButton(
                   text: 'Simpan Perubahan',
-                  icon: Icons.check,
+                  icon: Icons.check_rounded,
                   isLoading: _isSaving,
                   onPressed: _isSaving ? null : () => _handleSaveProfile(user),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
               ],
 
+              // Quick Actions Card
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Column(
+                  children: [
+                    _buildActionListTile(Icons.sports_tennis_rounded, 'Panduan Permainan Padel', () {}),
+                    const Divider(height: 1, color: AppColors.border),
+                    _buildActionListTile(Icons.support_agent_rounded, 'Hubungi Customer Service', () {}),
+                    const Divider(height: 1, color: AppColors.border),
+                    _buildActionListTile(Icons.shield_outlined, 'Syarat & Ketentuan Layanan', () {}),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
               // Logout Button
-              CustomButton(
-                text: 'Keluar (Logout)',
-                icon: Icons.logout,
-                type: ButtonType.secondary,
+              OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.error,
+                  side: const BorderSide(color: AppColors.error),
+                  minimumSize: const Size(double.infinity, 48),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                ),
+                icon: const Icon(Icons.logout_rounded, size: 20),
+                label: const Text('Keluar dari Akun (Logout)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                 onPressed: () => _showLogoutDialog(context, authProvider),
               ),
+              const SizedBox(height: 20),
             ],
           ),
         ),
@@ -272,13 +372,13 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
     );
   }
 
-  Widget _buildInfoTile(IconData icon, String text) {
+  Widget _buildInfoTile(IconData icon, String text, {bool isReadOnly = false}) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(10),
+        color: isReadOnly ? Colors.grey.shade100 : AppColors.background,
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.border),
       ),
       child: Row(
@@ -287,10 +387,30 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
           const SizedBox(width: 12),
           Text(
             text,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textPrimary),
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
           ),
+          if (isReadOnly) ...[
+            const Spacer(),
+            const Icon(Icons.lock_outline_rounded, size: 16, color: AppColors.textSecondary),
+          ],
         ],
       ),
+    );
+  }
+
+  Widget _buildActionListTile(IconData icon, String title, VoidCallback onTap) {
+    return ListTile(
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: AppColors.primary.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Icon(icon, color: AppColors.primary, size: 20),
+      ),
+      title: Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+      trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
+      onTap: onTap,
     );
   }
 }

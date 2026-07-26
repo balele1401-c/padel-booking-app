@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../../models/booking_model.dart';
-import '../../../shared/widgets/custom_button.dart';
 import '../customer_main_screen.dart';
 
 class PaymentSuccessScreen extends StatelessWidget {
@@ -22,9 +21,15 @@ class PaymentSuccessScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Pembayaran Berhasil'),
+        title: const Text(
+          'Pembayaran Berhasil',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        ),
         centerTitle: true,
+        backgroundColor: AppColors.primaryDark,
+        foregroundColor: Colors.white,
         automaticallyImplyLeading: false,
+        elevation: 0,
       ),
       body: SafeArea(
         child: Padding(
@@ -37,20 +42,27 @@ class PaymentSuccessScreen extends StatelessWidget {
                     children: [
                       const SizedBox(height: 20),
                       Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: const BoxDecoration(
+                        padding: const EdgeInsets.all(22),
+                        decoration: BoxDecoration(
                           color: AppColors.confirmedBg,
                           shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.confirmedText.withValues(alpha: 0.2),
+                              blurRadius: 16,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
                         child: const Icon(
                           Icons.check_circle_rounded,
-                          size: 72,
+                          size: 68,
                           color: AppColors.success,
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 18),
                       const Text(
-                        'Pembayaran Berhasil!',
+                        'Pembayaran Berhasil! 🎉',
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
@@ -68,60 +80,72 @@ class PaymentSuccessScreen extends StatelessWidget {
                       const SizedBox(height: 24),
 
                       // Payment Receipt Card
-                      Card(
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          side: const BorderSide(color: AppColors.border),
+                      Container(
+                        padding: const EdgeInsets.all(18),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(color: AppColors.border),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.04),
+                              blurRadius: 10,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(18.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  const Text(
-                                    'Status Pemesanan',
-                                    style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'Status Pemesanan',
+                                  style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.confirmedBg,
+                                    borderRadius: BorderRadius.circular(20),
                                   ),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.confirmedBg,
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    child: const Text(
-                                      'CONFIRMED',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
-                                        color: AppColors.confirmedText,
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.verified, size: 12, color: AppColors.confirmedText),
+                                      SizedBox(width: 4),
+                                      Text(
+                                        'CONFIRMED',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.confirmedText,
+                                        ),
                                       ),
-                                    ),
+                                    ],
                                   ),
-                                ],
-                              ),
-                              const Divider(height: 24),
-                              _buildReceiptRow('ID Booking', booking.id),
-                              const SizedBox(height: 10),
-                              _buildReceiptRow('ID Transaksi', paymentId),
-                              const SizedBox(height: 10),
-                              _buildReceiptRow('Lapangan', booking.courtName ?? 'Lapangan Padel'),
-                              const SizedBox(height: 10),
-                              _buildReceiptRow('Waktu Main', '${booking.startTime} - ${booking.endTime} WIB'),
-                              const SizedBox(height: 10),
-                              _buildReceiptRow('Metode Pembayaran', paymentMethod),
-                              const Divider(height: 24),
-                              _buildReceiptRow(
-                                'Total Dibayar',
-                                CurrencyFormatter.formatRupiah(booking.totalPrice),
-                                isBold: true,
-                                valueColor: AppColors.primary,
-                              ),
-                            ],
-                          ),
+                                ),
+                              ],
+                            ),
+                            const Divider(height: 24),
+                            _buildReceiptRow('ID Booking', booking.id),
+                            const SizedBox(height: 10),
+                            _buildReceiptRow('ID Transaksi', paymentId),
+                            const SizedBox(height: 10),
+                            _buildReceiptRow('Lapangan', booking.courtName ?? 'Lapangan Padel'),
+                            const SizedBox(height: 10),
+                            _buildReceiptRow('Waktu Main', '${booking.startTime} - ${booking.endTime} WIB'),
+                            const SizedBox(height: 10),
+                            _buildReceiptRow('Metode Pembayaran', paymentMethod),
+                            const Divider(height: 24),
+                            _buildReceiptRow(
+                              'Total Dibayar',
+                              CurrencyFormatter.formatRupiah(booking.totalPrice),
+                              isBold: true,
+                              valueColor: AppColors.primary,
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -130,8 +154,8 @@ class PaymentSuccessScreen extends StatelessWidget {
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
                           color: AppColors.confirmedBg.withValues(alpha: 0.5),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.confirmedText.withValues(alpha: 0.2)),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: AppColors.confirmedText.withValues(alpha: 0.25)),
                         ),
                         child: const Row(
                           children: [
@@ -139,7 +163,7 @@ class PaymentSuccessScreen extends StatelessWidget {
                             SizedBox(width: 12),
                             Expanded(
                               child: Text(
-                                'Tunjukkan bukti transaksi ini ke petugas saat tiba di lapangan padel.',
+                                'Tunjukkan bukti transaksi ini ke petugas saat tiba di lokasi lapangan padel.',
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: AppColors.confirmedText,
@@ -155,15 +179,54 @@ class PaymentSuccessScreen extends StatelessWidget {
                 ),
               ),
 
-              CustomButton(
-                text: 'Kembali ke Beranda',
-                icon: Icons.home,
-                onPressed: () {
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (context) => const CustomerMainScreen()),
-                    (route) => false,
-                  );
-                },
+              // Gradient Action Button
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AppColors.primaryDark, AppColors.primary],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.35),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (context) => const CustomerMainScreen()),
+                        (route) => false,
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(14),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 14),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.home_rounded, color: Colors.white, size: 20),
+                          SizedBox(width: 8),
+                          Text(
+                            'Kembali ke Beranda',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
@@ -183,7 +246,7 @@ class PaymentSuccessScreen extends StatelessWidget {
         Text(
           value,
           style: TextStyle(
-            fontSize: isBold ? 15 : 13,
+            fontSize: isBold ? 16 : 13,
             fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
             color: valueColor ?? AppColors.textPrimary,
           ),

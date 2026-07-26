@@ -10,42 +10,53 @@ class BookingService {
 
   CollectionReference get _bookingsCollection => _firestore.collection('bookings');
 
-  /// Stream of user's bookings (Customer)
+  /// Stream of user's bookings (Customer).
+  /// Sorts in Dart to prevent Firestore composite index missing error.
   Stream<List<BookingModel>> getUserBookingsStream(String userId) {
     return _bookingsCollection
         .where('userId', isEqualTo: userId)
-        .orderBy('tanggal', descending: true)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) => BookingModel.fromFirestore(doc)).toList();
+      final list = snapshot.docs.map((doc) => BookingModel.fromFirestore(doc)).toList();
+      list.sort((a, b) {
+        final dateA = a.createdAt ?? a.bookingDate;
+        final dateB = b.createdAt ?? b.bookingDate;
+        return dateB.compareTo(dateA);
+      });
+      return list;
     });
   }
 
-  /// Stream of all bookings (Admin)
+  /// Stream of all bookings (Admin).
+  /// Sorts in Dart to prevent Firestore composite index missing error.
   Stream<List<BookingModel>> getAllBookingsStream() {
     return _bookingsCollection
-        .orderBy('created_at', descending: true)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) => BookingModel.fromFirestore(doc)).toList();
+      final list = snapshot.docs.map((doc) => BookingModel.fromFirestore(doc)).toList();
+      list.sort((a, b) {
+        final dateA = a.createdAt ?? a.bookingDate;
+        final dateB = b.createdAt ?? b.bookingDate;
+        return dateB.compareTo(dateA);
+      });
+      return list;
     });
   }
 
-  /// Stream of active bookings for a specific court and date
+  /// Stream of active bookings (including blocked maintenance slots) for a specific court and date.
+  /// Uses robust Dart in-memory filtering to avoid type mismatch (Timestamp vs String)
+  /// and case-insensitivity issues.
   Stream<List<BookingModel>> getBookingsForCourtAndDateStream(String courtId, DateTime date) {
-    final startOfDay = DateTime(date.year, date.month, date.day);
-    final endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59);
+    return _bookingsCollection.snapshots().map((snapshot) {
+      return snapshot.docs.map((doc) => BookingModel.fromFirestore(doc)).where((booking) {
+        final bDate = booking.bookingDate;
+        final isSameDate = bDate.year == date.year && bDate.month == date.month && bDate.day == date.day;
+        final isSameCourt = booking.courtId == courtId;
+        final status = booking.status.trim().toLowerCase();
+        final isActiveStatus = status == 'pending' || status == 'confirmed' || status == 'completed' || status == 'blocked';
 
-    return _bookingsCollection
-        .where('courtId', isEqualTo: courtId)
-        .where('tanggal', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
-        .where('tanggal', isLessThanOrEqualTo: Timestamp.fromDate(endOfDay))
-        .snapshots()
-        .map((snapshot) {
-      return snapshot.docs
-          .map((doc) => BookingModel.fromFirestore(doc))
-          .where((booking) => booking.status == 'pending' || booking.status == 'confirmed')
-          .toList();
+        return isSameCourt && isSameDate && isActiveStatus;
+      }).toList();
     });
   }
 
@@ -55,28 +66,26 @@ class BookingService {
     required DateTime date,
     required String startTime,
   }) async {
-    final startOfDay = DateTime(date.year, date.month, date.day);
-    final endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59);
-
-    final query = await _bookingsCollection
-        .where('courtId', isEqualTo: courtId)
-        .where('tanggal', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
-        .where('tanggal', isLessThanOrEqualTo: Timestamp.fromDate(endOfDay))
-        .where('status', whereIn: ['pending', 'confirmed'])
-        .get();
+    final query = await _bookingsCollection.get();
 
     for (final doc in query.docs) {
       final existing = BookingModel.fromFirestore(doc);
-      // Overlap check: existing [startTime, endTime) vs requested [startTime, startTime+1h)
-      if (existing.startTime == startTime) {
-        return false;
+      final bDate = existing.bookingDate;
+      final isSameDate = bDate.year == date.year && bDate.month == date.month && bDate.day == date.day;
+      final isSameCourt = existing.courtId == courtId;
+      final status = existing.status.trim().toLowerCase();
+      final isActiveStatus = status == 'pending' || status == 'confirmed' || status == 'completed' || status == 'blocked';
+
+      if (isSameCourt && isSameDate && isActiveStatus) {
+        // Overlap check: existing [bStart, bEnd) vs requested startTime
+        if (startTime.compareTo(existing.startTime) >= 0 && startTime.compareTo(existing.endTime) < 0) {
+          return false;
+        }
       }
     }
 
     return true;
   }
-
-
 
   /// Create booking with Web-compatible atomic slot verification and set operation.
   /// Solves Flutter Web JS interop Promise exception while ensuring double-booking prevention.
@@ -94,7 +103,7 @@ class BookingService {
     );
 
     if (!available) {
-      throw Exception('Slot sudah terambil orang lain');
+      throw Exception('Slot sudah terambil orang lain atau sedang diblokir untuk maintenance');
     }
 
     try {
@@ -102,9 +111,9 @@ class BookingService {
       final docSnap = await primaryDocRef.get();
       if (docSnap.exists) {
         final data = docSnap.data() as Map<String, dynamic>? ?? {};
-        final status = data['status'];
-        if (status == 'pending' || status == 'confirmed') {
-          throw Exception('Slot sudah terambil orang lain');
+        final status = (data['status'] as String? ?? '').trim().toLowerCase();
+        if (status == 'pending' || status == 'confirmed' || status == 'completed' || status == 'blocked') {
+          throw Exception('Slot sudah terambil orang lain atau sedang diblokir untuk maintenance');
         }
       }
 
@@ -126,6 +135,60 @@ class BookingService {
       }
       throw Exception('Gagal menyimpan booking: ${e.toString().replaceAll('Exception: ', '')}');
     }
+  }
+
+  /// Block a specific slot for court maintenance
+  Future<String> blockSlotForMaintenance({
+    required String courtId,
+    required String courtName,
+    required DateTime date,
+    required String startTime,
+    required String endTime,
+    String? note,
+  }) async {
+    final formattedDate =
+        "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
+    final primaryDocId = "${courtId}_${formattedDate}_$startTime";
+    final primaryDocRef = _bookingsCollection.doc(primaryDocId);
+
+    final available = await isSlotAvailable(
+      courtId: courtId,
+      date: date,
+      startTime: startTime,
+    );
+
+    if (!available) {
+      throw Exception('Slot ini sudah terisi oleh customer atau sudah diblokir sebelumnya.');
+    }
+
+    final blockedBooking = BookingModel(
+      id: primaryDocId,
+      userId: 'admin_maintenance',
+      courtId: courtId,
+      courtName: courtName,
+      bookingDate: date,
+      startTime: startTime,
+      endTime: endTime,
+      durationHours: 1,
+      status: 'blocked',
+      totalPrice: 0,
+      paymentStatus: 'n/a',
+      createdAt: DateTime.now(),
+    );
+
+    final data = blockedBooking.toFirestore();
+    if (note != null && note.isNotEmpty) {
+      data['catatan'] = note;
+    }
+
+    await primaryDocRef.set(data);
+    debugPrint('✅ [BookingService] Slot blocked for maintenance with ID: $primaryDocId');
+    return primaryDocId;
+  }
+
+  /// Unblock maintenance slot (removes document from bookings collection)
+  Future<void> unblockSlot(String bookingId) async {
+    await _bookingsCollection.doc(bookingId).delete();
   }
 
   /// Update booking status ('confirmed', 'cancelled', 'completed')

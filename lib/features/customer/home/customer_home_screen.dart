@@ -20,19 +20,33 @@ class CustomerHomeScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Row(
+        elevation: 0,
+        backgroundColor: AppColors.surface,
+        title: Row(
           children: [
-            Icon(Icons.sports_tennis, color: AppColors.primary, size: 28),
-            SizedBox(width: 8),
-            Text(
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: const BoxDecoration(
+                color: AppColors.primary,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.sports_tennis, color: Colors.white, size: 20),
+            ),
+            const SizedBox(width: 10),
+            const Text(
               'Padel Booking',
-              style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                color: AppColors.textPrimary,
+                letterSpacing: -0.3,
+              ),
             ),
           ],
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout, color: AppColors.textSecondary),
+            icon: const Icon(Icons.logout_rounded, color: AppColors.textSecondary),
             tooltip: 'Logout',
             onPressed: () {
               authProvider.logout();
@@ -44,35 +58,126 @@ class CustomerHomeScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Welcome Header Banner
+            // Hero Welcome Banner Card (Sporty Elegant Gradient)
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AppColors.primaryDark, AppColors.primary],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(22),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primaryDark.withValues(alpha: 0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Halo, ${user?.name ?? "Pemain Padel"}! 👋',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              letterSpacing: -0.2,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Text(
+                            'PLAYER',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    const Text(
+                      'Pilih lapangan favoritmu dan jadwalkan permainan sekarang.',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.white70,
+                        height: 1.3,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Feature Badges Row
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          _buildHeaderFeatureBadge(Icons.flash_on_rounded, 'Instant Booking'),
+                          const SizedBox(width: 8),
+                          _buildHeaderFeatureBadge(Icons.verified_rounded, 'Terverifikasi'),
+                          const SizedBox(width: 8),
+                          _buildHeaderFeatureBadge(Icons.verified_user_rounded, 'Garansi Slot'),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Section Title Header
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Halo, ${user?.name ?? "Pemain Padel"}! 👋',
-                    style: const TextStyle(
-                      fontSize: 20,
+                  const Text(
+                    'Daftar Lapangan Tersedia',
+                    style: TextStyle(
+                      fontSize: 17,
                       fontWeight: FontWeight.bold,
                       color: AppColors.textPrimary,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'Pilih lapangan favoritmu dan jadwalkan permainan sekarang.',
-                    style: AppTextStyles.caption,
+                  StreamBuilder<List<CourtModel>>(
+                    stream: courtProvider.activeCourtsStream,
+                    builder: (context, snapshot) {
+                      final count = snapshot.data?.length ?? 0;
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Text(
+                          '$count Lapangan',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ],
-              ),
-            ),
-
-            // Section Title
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              child: Text(
-                'Daftar Lapangan Tersedia',
-                style: AppTextStyles.subheading,
               ),
             ),
 
@@ -81,11 +186,8 @@ class CustomerHomeScreen extends StatelessWidget {
               child: StreamBuilder<List<CourtModel>>(
                 stream: courtProvider.activeCourtsStream,
                 builder: (context, snapshot) {
-                  debugPrint('🎨 DEBUG [CustomerHomeScreen]: StreamBuilder connectionState=${snapshot.connectionState}, hasData=${snapshot.hasData}, hasError=${snapshot.hasError}');
-
                   // 1. Error State
                   if (snapshot.hasError) {
-                    debugPrint('❌ DEBUG [CustomerHomeScreen]: StreamBuilder Error: ${snapshot.error}');
                     return Center(
                       child: Padding(
                         padding: const EdgeInsets.all(24.0),
@@ -105,7 +207,7 @@ class CustomerHomeScreen extends StatelessWidget {
                     );
                   }
 
-                  // 2. Loading State (Only if we don't have data yet and connection is waiting)
+                  // 2. Loading State
                   if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
                     return const Center(
                       child: Column(
@@ -123,7 +225,6 @@ class CustomerHomeScreen extends StatelessWidget {
                   }
 
                   final courts = snapshot.data ?? [];
-                  debugPrint('🎨 DEBUG [CustomerHomeScreen]: Rendering courts list, count=${courts.length}');
 
                   // 3. Empty State
                   if (courts.isEmpty) {
@@ -171,9 +272,6 @@ class CustomerHomeScreen extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                     itemCount: courts.length,
                     itemBuilder: (context, index) {
-                      if (index < 0 || index >= courts.length) {
-                        return const SizedBox.shrink();
-                      }
                       final court = courts[index];
                       return CourtCard(
                         key: ValueKey(court.id),
@@ -194,6 +292,32 @@ class CustomerHomeScreen extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildHeaderFeatureBadge(IconData icon, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white24),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: Colors.amber),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -12,12 +12,23 @@ import 'widgets/admin_court_form_dialog.dart';
 class AdminCourtListScreen extends StatelessWidget {
   const AdminCourtListScreen({super.key});
 
+  /// Format time string to ensure valid HH:mm format (e.g. "09:0" -> "09:00")
+  String _formatTime(String time) {
+    final parts = time.split(':');
+    if (parts.length == 2) {
+      final hh = parts[0].padLeft(2, '0');
+      final mm = parts[1].padRight(2, '0');
+      return '$hh:$mm';
+    }
+    return time;
+  }
+
   void _showDeleteConfirmation(BuildContext context, CourtModel court) {
     showDialog(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: const Row(
             children: [
               Icon(Icons.warning_amber_rounded, color: AppColors.error, size: 26),
@@ -37,7 +48,7 @@ class AdminCourtListScreen extends StatelessWidget {
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.error,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
               onPressed: () async {
                 Navigator.of(dialogContext).pop();
@@ -91,10 +102,14 @@ class AdminCourtListScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Kelola Lapangan Padel'),
+        title: const Text(
+          'Kelola Lapangan Padel',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        ),
         centerTitle: true,
         backgroundColor: AppColors.primaryDark,
         foregroundColor: Colors.white,
+        elevation: 0,
       ),
       body: StreamBuilder<List<CourtModel>>(
         stream: courtProvider.allCourtsStream,
@@ -116,6 +131,7 @@ class AdminCourtListScreen extends StatelessWidget {
           }
 
           final courts = snapshot.data ?? [];
+          final activeCount = courts.where((c) => c.isActive).length;
 
           if (courts.isEmpty) {
             return Center(
@@ -124,15 +140,22 @@ class AdminCourtListScreen extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.sports_tennis, size: 64, color: Colors.grey),
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.sports_tennis_rounded, size: 56, color: AppColors.primary),
+                    ),
                     const SizedBox(height: 16),
                     const Text(
-                      'Belum Ada Lapangan',
+                      'Belum Ada Lapangan Padel',
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      'Klik tombol "+ Tambah Lapangan" di bawah untuk menambahkan lapangan padel baru.',
+                      'Klik tombol "+ Tambah Lapangan Baru" di bawah untuk mendaftarkan lapangan pertama Anda.',
                       textAlign: TextAlign.center,
                       style: AppTextStyles.caption,
                     ),
@@ -144,27 +167,85 @@ class AdminCourtListScreen extends StatelessWidget {
 
           return ListView.builder(
             padding: const EdgeInsets.all(16),
-            itemCount: courts.length,
+            itemCount: courts.length + 1, // +1 for Header Summary Card
             itemBuilder: (context, index) {
-              final court = courts[index];
+              if (index == 0) {
+                // Header Summary Card
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 18),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.border),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.03),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.sports_tennis, color: AppColors.primary, size: 24),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Ringkasan Lapangan',
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Total: ${courts.length} Lapangan ($activeCount Aktif)',
+                              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
 
-              return Card(
+              final court = courts[index - 1];
+              final formattedOpen = _formatTime(court.openTime);
+              final formattedClose = _formatTime(court.closeTime);
+
+              return Container(
                 margin: const EdgeInsets.only(bottom: 14),
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  side: const BorderSide(color: AppColors.border),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppColors.border.withValues(alpha: 0.8)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.03),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(14.0),
                   child: Row(
                     children: [
-                      // Court Image Preview Thumbnail
+                      // Court Thumbnail Image
                       ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(16),
                         child: Container(
-                          width: 84,
-                          height: 84,
+                          width: 90,
+                          height: 90,
                           color: Colors.grey.shade200,
                           child: Image.network(
                             court.imageUrl,
@@ -187,6 +268,8 @@ class AdminCourtListScreen extends StatelessWidget {
                                 Expanded(
                                   child: Text(
                                     court.name,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
@@ -197,41 +280,75 @@ class AdminCourtListScreen extends StatelessWidget {
                                 _buildStatusPill(court.isActive),
                               ],
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Jam: ${court.openTime} - ${court.closeTime} WIB',
-                              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                            ),
                             const SizedBox(height: 6),
-                            Text(
-                              '${CurrencyFormatter.formatRupiah(court.pricePerHour)} / jam',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.primary,
+
+                            // Operating Hours Row
+                            Row(
+                              children: [
+                                const Icon(Icons.access_time_rounded, size: 14, color: AppColors.textSecondary),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Jam: $formattedOpen - $formattedClose WIB',
+                                  style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+
+                            // Price Tag Container
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                '${CurrencyFormatter.formatRupiah(court.pricePerHour)} / jam',
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.primary,
+                                ),
                               ),
                             ),
                           ],
                         ),
                       ),
 
-                      // Edit & Delete Action Buttons
+                      const SizedBox(width: 10),
+
+                      // Styled Edit & Delete Action Buttons
                       Column(
                         children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit_outlined, color: AppColors.primary),
-                            tooltip: 'Edit Lapangan',
-                            onPressed: () {
+                          InkWell(
+                            onTap: () {
                               showDialog(
                                 context: context,
                                 builder: (context) => AdminCourtFormDialog(court: court),
                               );
                             },
+                            borderRadius: BorderRadius.circular(10),
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Icon(Icons.edit_rounded, color: AppColors.primary, size: 18),
+                            ),
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.delete_outline, color: AppColors.error),
-                            tooltip: 'Hapus Lapangan',
-                            onPressed: () => _showDeleteConfirmation(context, court),
+                          const SizedBox(height: 10),
+                          InkWell(
+                            onTap: () => _showDeleteConfirmation(context, court),
+                            borderRadius: BorderRadius.circular(10),
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: AppColors.error.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Icon(Icons.delete_outline_rounded, color: AppColors.error, size: 18),
+                            ),
                           ),
                         ],
                       ),
@@ -246,8 +363,9 @@ class AdminCourtListScreen extends StatelessWidget {
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
-        icon: const Icon(Icons.add),
-        label: const Text('Tambah Lapangan', style: TextStyle(fontWeight: FontWeight.bold)),
+        elevation: 4,
+        icon: const Icon(Icons.add_circle_outline),
+        label: const Text('Tambah Lapangan Baru', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
         onPressed: () {
           showDialog(
             context: context,
@@ -265,13 +383,27 @@ class AdminCourtListScreen extends StatelessWidget {
         color: isActive ? AppColors.confirmedBg : Colors.grey.shade200,
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Text(
-        isActive ? 'AKTIF' : 'NONAKTIF',
-        style: TextStyle(
-          fontSize: 9,
-          fontWeight: FontWeight.bold,
-          color: isActive ? AppColors.confirmedText : Colors.grey.shade700,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 6,
+            height: 6,
+            decoration: BoxDecoration(
+              color: isActive ? AppColors.confirmedText : Colors.grey.shade600,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            isActive ? 'AKTIF' : 'NONAKTIF',
+            style: TextStyle(
+              fontSize: 9,
+              fontWeight: FontWeight.bold,
+              color: isActive ? AppColors.confirmedText : Colors.grey.shade700,
+            ),
+          ),
+        ],
       ),
     );
   }

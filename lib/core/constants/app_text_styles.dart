@@ -1,41 +1,64 @@
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
-/// App Typography Guidelines based on PRD
+/// App Typography — Publication-grade design scale
+/// Roboto as base, consistent weights & letter-spacing for premium feel
 class AppTextStyles {
   AppTextStyles._();
 
-  // Heading (Judul Halaman): 20-24px, semi-bold
+  // ─── Page Headings ────────────────────────────────────────────────────────
   static const TextStyle heading = TextStyle(
     fontSize: 22.0,
-    fontWeight: FontWeight.w600,
+    fontWeight: FontWeight.w700,
     color: AppColors.textPrimary,
+    letterSpacing: -0.5,
+    height: 1.2,
   );
 
-  // Subheading (Judul section/card): 16-18px, medium
+  // ─── Section / Card Headings ─────────────────────────────────────────────
   static const TextStyle subheading = TextStyle(
     fontSize: 16.0,
-    fontWeight: FontWeight.w500,
+    fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
+    letterSpacing: -0.2,
   );
 
-  // Body text: 14px, regular
+  // ─── Body Text ────────────────────────────────────────────────────────────
   static const TextStyle body = TextStyle(
     fontSize: 14.0,
     fontWeight: FontWeight.normal,
     color: AppColors.textPrimary,
+    height: 1.5,
   );
 
-  // Caption/label kecil: 12px, regular
+  // ─── Caption / Label ──────────────────────────────────────────────────────
   static const TextStyle caption = TextStyle(
     fontSize: 12.0,
     fontWeight: FontWeight.normal,
     color: AppColors.textSecondary,
+    height: 1.4,
   );
 
-  // Badge text: 11-12px, bold
+  // ─── Badge / Pill ─────────────────────────────────────────────────────────
   static const TextStyle badge = TextStyle(
-    fontSize: 11.0,
+    fontSize: 10.0,
     fontWeight: FontWeight.bold,
+    letterSpacing: 0.5,
+  );
+
+  // ─── Price / Amount ───────────────────────────────────────────────────────
+  static const TextStyle price = TextStyle(
+    fontSize: 18.0,
+    fontWeight: FontWeight.w800,
+    color: AppColors.primary,
+    letterSpacing: -0.5,
+  );
+
+  // ─── CTA / Button Label ───────────────────────────────────────────────────
+  static const TextStyle button = TextStyle(
+    fontSize: 15.0,
+    fontWeight: FontWeight.bold,
+    letterSpacing: 0.2,
+    color: Colors.white,
   );
 }

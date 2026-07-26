@@ -8,7 +8,6 @@ import '../../../core/utils/currency_formatter.dart';
 import '../../../models/booking_model.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/payment_provider.dart';
-import '../../../shared/widgets/custom_button.dart';
 import 'payment_failed_screen.dart';
 import 'payment_success_screen.dart';
 
@@ -120,8 +119,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Pembayaran Midtrans Snap'),
+        title: const Text(
+          'Pembayaran Midtrans Snap',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        ),
         centerTitle: true,
+        backgroundColor: AppColors.primaryDark,
+        foregroundColor: Colors.white,
+        elevation: 0,
       ),
       body: Column(
         children: [
@@ -136,20 +141,20 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
                       color: AppColors.primary.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
                     ),
                     child: Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(8),
+                          padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
                             color: AppColors.primary.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Icon(Icons.payment, color: AppColors.primary, size: 22),
+                          child: const Icon(Icons.payment_rounded, color: AppColors.primary, size: 24),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 14),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -196,49 +201,54 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   const SizedBox(height: 20),
 
                   // Billing Amount Header Card
-                  Card(
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      side: const BorderSide(color: AppColors.border),
+                  Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: AppColors.border),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                'Total Tagihan',
-                                style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Total Tagihan',
+                              style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                            ),
+                            Text(
+                              CurrencyFormatter.formatRupiah(widget.booking.totalPrice),
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
                               ),
-                              Text(
-                                CurrencyFormatter.formatRupiah(widget.booking.totalPrice),
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.primary,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const Divider(height: 20),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                widget.booking.courtName ?? 'Lapangan Padel',
-                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-                              ),
-                              Text(
-                                '${widget.booking.startTime} - ${widget.booking.endTime} WIB (${widget.booking.durationHours} Jam)',
-                                style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                            ),
+                          ],
+                        ),
+                        const Divider(height: 22),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              widget.booking.courtName ?? 'Lapangan Padel',
+                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              '${widget.booking.startTime} - ${widget.booking.endTime} WIB (${widget.booking.durationHours} Jam)',
+                              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -250,11 +260,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   // Category Tabs (QRIS, Bank Transfer, E-Wallet)
                   Row(
                     children: [
-                      _buildCategoryTab('qris', 'QRIS', Icons.qr_code_2),
+                      _buildCategoryTab('qris', 'QRIS', Icons.qr_code_2_rounded),
                       const SizedBox(width: 10),
-                      _buildCategoryTab('bank_transfer', 'Transfer Bank', Icons.account_balance),
+                      _buildCategoryTab('bank_transfer', 'Transfer Bank', Icons.account_balance_rounded),
                       const SizedBox(width: 10),
-                      _buildCategoryTab('ewallet', 'E-Wallet', Icons.account_balance_wallet),
+                      _buildCategoryTab('ewallet', 'E-Wallet', Icons.account_balance_wallet_rounded),
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -272,15 +282,15 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
                   // Simulator Info Notice
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: AppColors.pendingBg.withValues(alpha: 0.5),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: AppColors.pendingText.withValues(alpha: 0.2)),
+                      color: AppColors.pendingBg.withValues(alpha: 0.4),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: AppColors.pendingText.withValues(alpha: 0.25)),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.info_outline, color: AppColors.pendingText, size: 18),
+                        const Icon(Icons.info_outline_rounded, color: AppColors.pendingText, size: 20),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
@@ -303,13 +313,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
           // Bottom Buttons
           Container(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
             decoration: BoxDecoration(
               color: AppColors.surface,
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.08),
-                  blurRadius: 10,
+                  blurRadius: 12,
                   offset: const Offset(0, -4),
                 ),
               ],
@@ -318,17 +328,75 @@ class _PaymentScreenState extends State<PaymentScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  CustomButton(
-                    text: 'Bayar Sekarang (${CurrencyFormatter.formatRupiah(widget.booking.totalPrice)})',
-                    icon: Icons.lock_outline,
-                    isLoading: paymentProvider.isProcessing,
-                    onPressed: paymentProvider.isProcessing ? null : _handlePayNow,
+                  // Pay Now Gradient Button
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      gradient: paymentProvider.isProcessing
+                          ? null
+                          : const LinearGradient(
+                              colors: [AppColors.primaryDark, AppColors.primary],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                      color: paymentProvider.isProcessing ? Colors.grey.shade400 : null,
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: paymentProvider.isProcessing
+                          ? null
+                          : [
+                              BoxShadow(
+                                color: AppColors.primary.withValues(alpha: 0.35),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: paymentProvider.isProcessing ? null : _handlePayNow,
+                        borderRadius: BorderRadius.circular(14),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              if (paymentProvider.isProcessing)
+                                const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+                                )
+                              else ...[
+                                const Icon(Icons.lock_outline_rounded, color: Colors.white, size: 20),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Bayar Sekarang (${CurrencyFormatter.formatRupiah(widget.booking.totalPrice)})',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
-                  const SizedBox(height: 8),
-                  CustomButton(
-                    text: 'Batal Pembayaran',
-                    type: ButtonType.secondary,
+                  const SizedBox(height: 10),
+
+                  // Cancel Button
+                  OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.textSecondary,
+                      side: const BorderSide(color: AppColors.border),
+                      minimumSize: const Size(double.infinity, 44),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
                     onPressed: paymentProvider.isProcessing ? null : _handleCancel,
+                    child: const Text('Batal Pembayaran', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
                   ),
                 ],
               ),
@@ -356,22 +424,38 @@ class _PaymentScreenState extends State<PaymentScreen> {
             }
           });
         },
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(14),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.primary : AppColors.surface,
-            borderRadius: BorderRadius.circular(10),
+            gradient: isSelected
+                ? const LinearGradient(
+                    colors: [AppColors.primaryDark, AppColors.primary],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  )
+                : null,
+            color: isSelected ? null : AppColors.surface,
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: isSelected ? AppColors.primary : AppColors.border,
             ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ]
+                : null,
           ),
           child: Column(
             children: [
               Icon(
                 icon,
-                size: 20,
+                size: 22,
                 color: isSelected ? Colors.white : AppColors.textSecondary,
               ),
               const SizedBox(height: 4),
@@ -391,49 +475,47 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   Widget _buildQrisSection() {
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: AppColors.border),
+    return Container(
+      padding: const EdgeInsets.all(20.0),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.border),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.qr_code_2, color: AppColors.primary, size: 28),
-                SizedBox(width: 8),
-                Text(
-                  'QRIS Standar Indonesia',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade300),
+      child: Column(
+        children: [
+          const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.qr_code_2_rounded, color: AppColors.primary, size: 28),
+              SizedBox(width: 8),
+              Text(
+                'QRIS Standar Indonesia',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
-              child: const Icon(
-                Icons.qr_code_scanner_rounded,
-                size: 160,
-                color: AppColors.textPrimary,
-              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: Colors.grey.shade300),
             ),
-            const SizedBox(height: 14),
-            const Text(
-              'Bisa di-scan menggunakan GoPay, OVO, Dana, ShopeePay, LinkAja, atau m-Banking',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+            child: const Icon(
+              Icons.qr_code_scanner_rounded,
+              size: 160,
+              color: AppColors.textPrimary,
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 14),
+          const Text(
+            'Bisa di-scan menggunakan GoPay, OVO, Dana, ShopeePay, LinkAja, atau m-Banking',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+          ),
+        ],
       ),
     );
   }
@@ -446,111 +528,109 @@ class _PaymentScreenState extends State<PaymentScreen> {
       {'name': 'Transfer Bank Mandiri', 'code': 'Mandiri'},
     ];
 
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: AppColors.border),
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.border),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Pilih Bank Virtual Account',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Pilih Bank Virtual Account',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
 
-            ...banks.map((b) {
-              final isSelected = _selectedMethod == b['name'];
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: InkWell(
-                  onTap: () {
-                    setState(() {
-                      _selectedMethod = b['name']!;
-                    });
-                  },
-                  borderRadius: BorderRadius.circular(10),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: isSelected ? AppColors.primary.withValues(alpha: 0.08) : AppColors.surface,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: isSelected ? AppColors.primary : AppColors.border,
-                        width: isSelected ? 1.5 : 1,
-                      ),
+          ...banks.map((b) {
+            final isSelected = _selectedMethod == b['name'];
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: InkWell(
+                onTap: () {
+                  setState(() {
+                    _selectedMethod = b['name']!;
+                  });
+                },
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: isSelected ? AppColors.primary.withValues(alpha: 0.08) : AppColors.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isSelected ? AppColors.primary : AppColors.border,
+                      width: isSelected ? 1.5 : 1,
                     ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
-                          color: isSelected ? AppColors.primary : AppColors.textSecondary,
-                          size: 20,
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
+                        color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        b['name']!,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                          color: AppColors.textPrimary,
                         ),
-                        const SizedBox(width: 10),
-                        Text(
-                          b['name']!,
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                      ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }),
+
+          const Divider(height: 24),
+          const Text(
+            'Nomor Virtual Account (Sandbox)',
+            style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    _vaNumber,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
+                      color: AppColors.primaryDark,
                     ),
                   ),
                 ),
-              );
-            }),
-
-            const Divider(height: 24),
-            const Text(
-              'Nomor Virtual Account (Sandbox)',
-              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
-            ),
-            const SizedBox(height: 6),
-            Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(8),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                icon: const Icon(Icons.copy_rounded, color: AppColors.primary),
+                tooltip: 'Salin VA',
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: _vaNumber));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Nomor Virtual Account berhasil disalin!'),
+                      duration: Duration(seconds: 2),
                     ),
-                    child: Text(
-                      _vaNumber,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.2,
-                        color: AppColors.primaryDark,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: const Icon(Icons.copy, color: AppColors.primary),
-                  tooltip: 'Salin VA',
-                  onPressed: () {
-                    Clipboard.setData(ClipboardData(text: _vaNumber));
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Nomor Virtual Account berhasil disalin!'),
-                        duration: Duration(seconds: 2),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-          ],
-        ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -562,77 +642,75 @@ class _PaymentScreenState extends State<PaymentScreen> {
       {'name': 'Dana / OVO', 'desc': 'Bayar via aplikasi E-Wallet'},
     ];
 
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: AppColors.border),
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.border),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Pilih Layanan E-Wallet',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Pilih Layanan E-Wallet',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
 
-            ...ewallets.map((ew) {
-              final isSelected = _selectedMethod == ew['name'];
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: InkWell(
-                  onTap: () {
-                    setState(() {
-                      _selectedMethod = ew['name']!;
-                    });
-                  },
-                  borderRadius: BorderRadius.circular(10),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: isSelected ? AppColors.primary.withValues(alpha: 0.08) : AppColors.surface,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: isSelected ? AppColors.primary : AppColors.border,
-                        width: isSelected ? 1.5 : 1,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
-                          color: isSelected ? AppColors.primary : AppColors.textSecondary,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 10),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              ew['name']!,
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                            Text(
-                              ew['desc']!,
-                              style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
-                            ),
-                          ],
-                        ),
-                      ],
+          ...ewallets.map((ew) {
+            final isSelected = _selectedMethod == ew['name'];
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: InkWell(
+                onTap: () {
+                  setState(() {
+                    _selectedMethod = ew['name']!;
+                  });
+                },
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: isSelected ? AppColors.primary.withValues(alpha: 0.08) : AppColors.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isSelected ? AppColors.primary : AppColors.border,
+                      width: isSelected ? 1.5 : 1,
                     ),
                   ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
+                        color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 10),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            ew['name']!,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          Text(
+                            ew['desc']!,
+                            style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              );
-            }),
-          ],
-        ),
+              ),
+            );
+          }),
+        ],
       ),
     );
   }

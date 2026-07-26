@@ -8,7 +8,6 @@ import '../../../models/booking_model.dart';
 import '../../../models/court_model.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/booking_provider.dart';
-import '../../../shared/widgets/custom_button.dart';
 import '../payment/payment_screen.dart';
 
 class BookingSummaryScreen extends StatefulWidget {
@@ -107,7 +106,7 @@ class _BookingSummaryScreenState extends State<BookingSummaryScreen> {
       barrierDismissible: false,
       builder: (context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: const Row(
             children: [
               Icon(Icons.error_outline_rounded, color: AppColors.error, size: 28),
@@ -130,7 +129,7 @@ class _BookingSummaryScreenState extends State<BookingSummaryScreen> {
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
               onPressed: () {
                 Navigator.of(context).pop(); // Close dialog
@@ -147,29 +146,29 @@ class _BookingSummaryScreenState extends State<BookingSummaryScreen> {
   Widget _buildCourtImage(String imageUrl) {
     if (imageUrl.trim().isEmpty) {
       return Container(
-        width: 70,
-        height: 70,
+        width: 72,
+        height: 72,
         decoration: BoxDecoration(
           color: AppColors.primary.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
         ),
-        child: const Icon(Icons.sports_tennis, color: AppColors.primary, size: 36),
+        child: const Icon(Icons.sports_tennis_rounded, color: AppColors.primary, size: 36),
       );
     }
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(14),
       child: Image.network(
         imageUrl,
-        width: 70,
-        height: 70,
+        width: 72,
+        height: 72,
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) {
           return Container(
-            width: 70,
-            height: 70,
+            width: 72,
+            height: 72,
             color: AppColors.primary.withValues(alpha: 0.15),
-            child: const Icon(Icons.sports_tennis, color: AppColors.primary, size: 36),
+            child: const Icon(Icons.sports_tennis_rounded, color: AppColors.primary, size: 36),
           );
         },
       ),
@@ -186,8 +185,14 @@ class _BookingSummaryScreenState extends State<BookingSummaryScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Ringkasan Booking'),
+        title: const Text(
+          'Ringkasan Pemesanan',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        ),
         centerTitle: true,
+        backgroundColor: AppColors.primaryDark,
+        foregroundColor: Colors.white,
+        elevation: 0,
       ),
       body: Column(
         children: [
@@ -197,150 +202,158 @@ class _BookingSummaryScreenState extends State<BookingSummaryScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Court Card Header
-                  Card(
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      side: const BorderSide(color: AppColors.border),
+                  // Court Info Card
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: AppColors.border),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Row(
-                        children: [
-                          _buildCourtImage(widget.court.imageUrl),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  widget.court.name,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.textPrimary,
-                                  ),
+                    child: Row(
+                      children: [
+                        _buildCourtImage(widget.court.imageUrl),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                widget.court.name,
+                                style: const TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.textPrimary,
                                 ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  '${widget.court.openTime} - ${widget.court.closeTime} WIB',
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: AppColors.textSecondary,
-                                  ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${widget.court.openTime} - ${widget.court.closeTime} WIB',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textSecondary,
                                 ),
-                              ],
-                            ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${CurrencyFormatter.formatRupiah(widget.court.pricePerHour)} / jam',
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 24),
 
-                  // Section Title: Detail Jadwal
+                  // Section Title 1: Detail Jadwal
                   const Text('Detail Jadwal Main', style: AppTextStyles.subheading),
                   const SizedBox(height: 12),
 
-                  Card(
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
                       borderRadius: BorderRadius.circular(16),
-                      side: const BorderSide(color: AppColors.border),
+                      border: Border.all(color: AppColors.border),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        children: [
-                          _buildRowItem(
-                            icon: Icons.calendar_today_rounded,
-                            label: 'Tanggal',
-                            value: formattedDate,
-                          ),
-                          const Divider(height: 20),
-                          _buildRowItem(
-                            icon: Icons.access_time_rounded,
-                            label: 'Jam Bermain',
-                            value: '${widget.startTime} - ${widget.endTime} WIB',
-                          ),
-                          const Divider(height: 20),
-                          _buildRowItem(
-                            icon: Icons.timer_outlined,
-                            label: 'Durasi',
-                            value: '${widget.durationHours} Jam',
-                          ),
-                        ],
-                      ),
+                    child: Column(
+                      children: [
+                        _buildRowItem(
+                          icon: Icons.calendar_today_rounded,
+                          label: 'Tanggal Bermain',
+                          value: formattedDate,
+                        ),
+                        const Divider(height: 22),
+                        _buildRowItem(
+                          icon: Icons.access_time_rounded,
+                          label: 'Jam Bermain',
+                          value: '${widget.startTime} - ${widget.endTime} WIB',
+                        ),
+                        const Divider(height: 22),
+                        _buildRowItem(
+                          icon: Icons.timer_rounded,
+                          label: 'Durasi',
+                          value: '${widget.durationHours} Jam Permainan',
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 24),
 
-                  // Section Title: Detail Pemesan
+                  // Section Title 2: Detail Pemesan
                   const Text('Informasi Pemesan', style: AppTextStyles.subheading),
                   const SizedBox(height: 12),
 
-                  Card(
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
                       borderRadius: BorderRadius.circular(16),
-                      side: const BorderSide(color: AppColors.border),
+                      border: Border.all(color: AppColors.border),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        children: [
+                    child: Column(
+                      children: [
+                        _buildRowItem(
+                          icon: Icons.person_outline_rounded,
+                          label: 'Nama Lengkap',
+                          value: user?.name ?? '-',
+                        ),
+                        const Divider(height: 22),
+                        _buildRowItem(
+                          icon: Icons.email_outlined,
+                          label: 'Email',
+                          value: user?.email ?? '-',
+                        ),
+                        if (user?.phoneNumber != null && user!.phoneNumber.isNotEmpty) ...[
+                          const Divider(height: 22),
                           _buildRowItem(
-                            icon: Icons.person_outline,
-                            label: 'Nama',
-                            value: user?.name ?? '-',
+                            icon: Icons.phone_outlined,
+                            label: 'No. Telepon',
+                            value: user.phoneNumber,
                           ),
-                          const Divider(height: 20),
-                          _buildRowItem(
-                            icon: Icons.email_outlined,
-                            label: 'Email',
-                            value: user?.email ?? '-',
-                          ),
-                          if (user?.phoneNumber != null && user!.phoneNumber.isNotEmpty) ...[
-                            const Divider(height: 20),
-                            _buildRowItem(
-                              icon: Icons.phone_outlined,
-                              label: 'No. Telepon',
-                              value: user.phoneNumber,
-                            ),
-                          ],
                         ],
-                      ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 24),
 
-                  // Section Title: Rincian Pembayaran
+                  // Section Title 3: Rincian Pembayaran
                   const Text('Rincian Pembayaran', style: AppTextStyles.subheading),
                   const SizedBox(height: 12),
 
-                  Card(
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
                       borderRadius: BorderRadius.circular(16),
-                      side: const BorderSide(color: AppColors.border),
+                      border: Border.all(color: AppColors.border),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        children: [
-                          _buildPriceRow(
-                            'Harga Sewa (${CurrencyFormatter.formatRupiah(widget.court.pricePerHour)} x ${widget.durationHours} Jam)',
-                            CurrencyFormatter.formatRupiah(widget.totalPrice),
-                          ),
-                          const Divider(height: 24),
-                          _buildPriceRow(
-                            'Total Pembayaran',
-                            CurrencyFormatter.formatRupiah(widget.totalPrice),
-                            isTotal: true,
-                          ),
-                        ],
-                      ),
+                    child: Column(
+                      children: [
+                        _buildPriceRow(
+                          'Sewa (${CurrencyFormatter.formatRupiah(widget.court.pricePerHour)} x ${widget.durationHours} Jam)',
+                          CurrencyFormatter.formatRupiah(widget.totalPrice),
+                        ),
+                        const Divider(height: 24),
+                        _buildPriceRow(
+                          'Total Pembayaran',
+                          CurrencyFormatter.formatRupiah(widget.totalPrice),
+                          isTotal: true,
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -351,23 +364,72 @@ class _BookingSummaryScreenState extends State<BookingSummaryScreen> {
 
           // Bottom Action Bar with Confirmation Button
           Container(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
             decoration: BoxDecoration(
               color: AppColors.surface,
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.08),
-                  blurRadius: 10,
+                  blurRadius: 12,
                   offset: const Offset(0, -4),
                 ),
               ],
             ),
             child: SafeArea(
-              child: CustomButton(
-                text: 'Konfirmasi Booking',
-                icon: Icons.check_circle_outline,
-                isLoading: _isSubmitting,
-                onPressed: _isSubmitting ? null : _handleConfirmation,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: _isSubmitting
+                      ? null
+                      : const LinearGradient(
+                          colors: [AppColors.primaryDark, AppColors.primary],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                  color: _isSubmitting ? Colors.grey.shade400 : null,
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: _isSubmitting
+                      ? null
+                      : [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.35),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: _isSubmitting ? null : _handleConfirmation,
+                    borderRadius: BorderRadius.circular(14),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          if (_isSubmitting)
+                            const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+                            )
+                          else ...[
+                            const Icon(Icons.check_circle_outline_rounded, color: Colors.white, size: 20),
+                            const SizedBox(width: 8),
+                            const Text(
+                              'Konfirmasi Booking',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
@@ -383,7 +445,14 @@ class _BookingSummaryScreenState extends State<BookingSummaryScreen> {
   }) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: AppColors.primary),
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, size: 18, color: AppColors.primary),
+        ),
         const SizedBox(width: 12),
         Text(
           label,
@@ -397,7 +466,7 @@ class _BookingSummaryScreenState extends State<BookingSummaryScreen> {
             textAlign: TextAlign.end,
             style: const TextStyle(
               fontSize: 13,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.bold,
               color: AppColors.textPrimary,
             ),
           ),
@@ -423,7 +492,7 @@ class _BookingSummaryScreenState extends State<BookingSummaryScreen> {
         Text(
           amount,
           style: TextStyle(
-            fontSize: isTotal ? 18 : 13,
+            fontSize: isTotal ? 19 : 13,
             fontWeight: isTotal ? FontWeight.bold : FontWeight.w600,
             color: isTotal ? AppColors.primary : AppColors.textPrimary,
           ),

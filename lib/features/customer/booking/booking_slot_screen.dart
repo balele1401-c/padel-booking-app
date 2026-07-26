@@ -7,7 +7,6 @@ import '../../../core/utils/currency_formatter.dart';
 import '../../../models/booking_model.dart';
 import '../../../models/court_model.dart';
 import '../../../providers/booking_provider.dart';
-import '../../../shared/widgets/custom_button.dart';
 import 'booking_summary_screen.dart';
 
 class BookingSlotScreen extends StatefulWidget {
@@ -83,6 +82,20 @@ class _BookingSlotScreenState extends State<BookingSlotScreen> {
     return false;
   }
 
+  /// Check if a given slot is specifically blocked for maintenance
+  bool _isSlotBlocked(String slotTime, List<BookingModel> activeBookings) {
+    for (final booking in activeBookings) {
+      if (booking.status.trim().toLowerCase() == 'blocked') {
+        final bStart = booking.startTime;
+        final bEnd = booking.endTime;
+        if (slotTime.compareTo(bStart) >= 0 && slotTime.compareTo(bEnd) < 0) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   /// Check if a 2-hour duration starting at [startTime] is valid
   bool _canSelect2Hours(String startTime, List<BookingModel> activeBookings) {
     final endTime2h = _calculateEndTime(startTime, 2);
@@ -112,8 +125,14 @@ class _BookingSlotScreenState extends State<BookingSlotScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Pilih Jadwal Main'),
+        title: const Text(
+          'Pilih Jadwal Main',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        ),
         centerTitle: true,
+        backgroundColor: AppColors.primaryDark,
+        foregroundColor: Colors.white,
+        elevation: 0,
       ),
       body: StreamBuilder<List<BookingModel>>(
         stream: bookingProvider.getBookingsForCourtAndDateStream(
@@ -127,33 +146,43 @@ class _BookingSlotScreenState extends State<BookingSlotScreen> {
             children: [
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(18.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Court info banner
+                      // Court Info Header Card
                       Container(
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
                           color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(16),
                           border: Border.all(color: AppColors.border),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.04),
+                              blurRadius: 10,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
                         ),
                         child: Row(
                           children: [
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Container(
+                                width: 54,
+                                height: 54,
                                 color: AppColors.primary.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: const Icon(
-                                Icons.sports_tennis,
-                                color: AppColors.primary,
-                                size: 24,
+                                child: Image.network(
+                                  widget.court.imageUrl,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) => const Center(
+                                    child: Icon(Icons.sports_tennis, color: AppColors.primary, size: 28),
+                                  ),
+                                ),
                               ),
                             ),
-                            const SizedBox(width: 12),
+                            const SizedBox(width: 14),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -172,7 +201,7 @@ class _BookingSlotScreenState extends State<BookingSlotScreen> {
                                     style: const TextStyle(
                                       fontSize: 13,
                                       color: AppColors.primary,
-                                      fontWeight: FontWeight.w600,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 ],
@@ -181,21 +210,21 @@ class _BookingSlotScreenState extends State<BookingSlotScreen> {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 22),
 
                       // Section Title 1: Pilih Tanggal (7 Hari)
-                      Row(
+                      const Row(
                         children: [
-                          const Icon(Icons.calendar_month, size: 20, color: AppColors.primary),
-                          const SizedBox(width: 8),
-                          const Text('Pilih Tanggal', style: AppTextStyles.subheading),
+                          Icon(Icons.calendar_month_rounded, size: 20, color: AppColors.primary),
+                          SizedBox(width: 8),
+                          Text('Pilih Tanggal Bermain', style: AppTextStyles.subheading),
                         ],
                       ),
                       const SizedBox(height: 12),
 
                       // Horizontal Date Picker (7 days)
                       SizedBox(
-                        height: 76,
+                        height: 80,
                         child: ListView.builder(
                           scrollDirection: Axis.horizontal,
                           itemCount: _next7Days.length,
@@ -218,13 +247,20 @@ class _BookingSlotScreenState extends State<BookingSlotScreen> {
                                     _selectedStartTime = null; // Reset selection on date change
                                   });
                                 },
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(16),
                                 child: AnimatedContainer(
                                   duration: const Duration(milliseconds: 200),
-                                  width: 72,
+                                  width: 74,
                                   decoration: BoxDecoration(
-                                    color: isSelected ? AppColors.primary : AppColors.surface,
-                                    borderRadius: BorderRadius.circular(12),
+                                    gradient: isSelected
+                                        ? const LinearGradient(
+                                            colors: [AppColors.primaryDark, AppColors.primary],
+                                            begin: Alignment.topCenter,
+                                            end: Alignment.bottomCenter,
+                                          )
+                                        : null,
+                                    color: isSelected ? null : AppColors.surface,
+                                    borderRadius: BorderRadius.circular(16),
                                     border: Border.all(
                                       color: isSelected ? AppColors.primary : AppColors.border,
                                       width: isSelected ? 2 : 1,
@@ -233,8 +269,8 @@ class _BookingSlotScreenState extends State<BookingSlotScreen> {
                                         ? [
                                             BoxShadow(
                                               color: AppColors.primary.withValues(alpha: 0.3),
-                                              blurRadius: 8,
-                                              offset: const Offset(0, 3),
+                                              blurRadius: 10,
+                                              offset: const Offset(0, 4),
                                             ),
                                           ]
                                         : null,
@@ -246,8 +282,8 @@ class _BookingSlotScreenState extends State<BookingSlotScreen> {
                                         dayName,
                                         style: TextStyle(
                                           fontSize: 11,
-                                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                                          color: isSelected ? Colors.white : AppColors.textSecondary,
+                                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                          color: isSelected ? Colors.white70 : AppColors.textSecondary,
                                         ),
                                       ),
                                       const SizedBox(height: 4),
@@ -270,11 +306,11 @@ class _BookingSlotScreenState extends State<BookingSlotScreen> {
                       const SizedBox(height: 24),
 
                       // Section Title 2: Durasi Bermain
-                      Row(
+                      const Row(
                         children: [
-                          const Icon(Icons.timer_outlined, size: 20, color: AppColors.primary),
-                          const SizedBox(width: 8),
-                          const Text('Pilih Durasi', style: AppTextStyles.subheading),
+                          Icon(Icons.timer_rounded, size: 20, color: AppColors.primary),
+                          SizedBox(width: 8),
+                          Text('Pilih Durasi Bermain', style: AppTextStyles.subheading),
                         ],
                       ),
                       const SizedBox(height: 12),
@@ -288,14 +324,15 @@ class _BookingSlotScreenState extends State<BookingSlotScreen> {
                           return Padding(
                             padding: const EdgeInsets.only(right: 12),
                             child: ChoiceChip(
-                              label: Text('$dur Jam'),
+                              label: Text('$dur Jam Permainan'),
                               selected: isSelected,
                               selectedColor: AppColors.primary,
                               backgroundColor: AppColors.surface,
                               disabledColor: AppColors.background,
                               labelStyle: TextStyle(
                                 color: isSelected ? Colors.white : AppColors.textPrimary,
-                                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                                fontSize: 13,
                               ),
                               side: BorderSide(
                                 color: isSelected ? AppColors.primary : AppColors.border,
@@ -321,9 +358,9 @@ class _BookingSlotScreenState extends State<BookingSlotScreen> {
                         children: [
                           const Row(
                             children: [
-                              Icon(Icons.schedule, size: 20, color: AppColors.primary),
+                              Icon(Icons.schedule_rounded, size: 20, color: AppColors.primary),
                               SizedBox(width: 8),
-                              Text('Pilih Jam Main', style: AppTextStyles.subheading),
+                              Text('Pilih Jam Operasional', style: AppTextStyles.subheading),
                             ],
                           ),
                           Row(
@@ -332,12 +369,12 @@ class _BookingSlotScreenState extends State<BookingSlotScreen> {
                               const SizedBox(width: 8),
                               _buildLegendItem(AppColors.surface, 'Tersedia', hasBorder: true),
                               const SizedBox(width: 8),
-                              _buildLegendItem(Colors.grey.shade300, 'Terisi'),
+                              _buildLegendItem(AppColors.cancelledBg, 'Dibooking', hasBorder: true, borderColor: AppColors.error),
                             ],
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 14),
 
                       // Grid Slot Jam Operasional
                       GridView.builder(
@@ -345,7 +382,7 @@ class _BookingSlotScreenState extends State<BookingSlotScreen> {
                         physics: const NeverScrollableScrollPhysics(),
                         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 3,
-                          childAspectRatio: 2.2,
+                          childAspectRatio: 2.1,
                           crossAxisSpacing: 10,
                           mainAxisSpacing: 10,
                         ),
@@ -353,16 +390,21 @@ class _BookingSlotScreenState extends State<BookingSlotScreen> {
                         itemBuilder: (context, index) {
                           final slotTime = allSlots[index];
                           final isOccupied = _isSlotOccupied(slotTime, activeBookings);
+                          final isBlocked = _isSlotBlocked(slotTime, activeBookings);
                           final isSelected = _selectedStartTime == slotTime;
 
                           Color bgColor = AppColors.surface;
                           Color textColor = AppColors.textPrimary;
                           Color borderColor = AppColors.border;
 
-                          if (isOccupied) {
-                            bgColor = Colors.grey.shade200;
-                            textColor = Colors.grey.shade500;
-                            borderColor = Colors.transparent;
+                          if (isBlocked) {
+                            bgColor = Colors.blueGrey.shade100;
+                            textColor = AppColors.textPrimary;
+                            borderColor = Colors.blueGrey.shade300;
+                          } else if (isOccupied) {
+                            bgColor = AppColors.cancelledBg;
+                            textColor = AppColors.error;
+                            borderColor = AppColors.error.withValues(alpha: 0.3);
                           } else if (isSelected) {
                             bgColor = AppColors.primary;
                             textColor = Colors.white;
@@ -370,12 +412,11 @@ class _BookingSlotScreenState extends State<BookingSlotScreen> {
                           }
 
                           return InkWell(
-                            onTap: isOccupied
+                            onTap: (isOccupied || isBlocked)
                                 ? null
                                 : () {
                                     setState(() {
                                       _selectedStartTime = slotTime;
-                                      // If 2 hours is selected, check if valid, otherwise auto-revert to 1 hour
                                       if (_selectedDuration == 2 && !_canSelect2Hours(slotTime, activeBookings)) {
                                         _selectedDuration = 1;
                                         ScaffoldMessenger.of(context).showSnackBar(
@@ -387,19 +428,26 @@ class _BookingSlotScreenState extends State<BookingSlotScreen> {
                                       }
                                     });
                                   },
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(12),
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 150),
                               decoration: BoxDecoration(
-                                color: bgColor,
-                                borderRadius: BorderRadius.circular(10),
+                                gradient: isSelected
+                                    ? const LinearGradient(
+                                        colors: [AppColors.primaryDark, AppColors.primary],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      )
+                                    : null,
+                                color: isSelected ? null : bgColor,
+                                borderRadius: BorderRadius.circular(12),
                                 border: Border.all(color: borderColor, width: isSelected ? 2 : 1),
                                 boxShadow: isSelected
                                     ? [
                                         BoxShadow(
                                           color: AppColors.primary.withValues(alpha: 0.3),
-                                          blurRadius: 6,
-                                          offset: const Offset(0, 2),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 3),
                                         ),
                                       ]
                                     : null,
@@ -407,22 +455,41 @@ class _BookingSlotScreenState extends State<BookingSlotScreen> {
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Text(
-                                    slotTime,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: isSelected || isOccupied ? FontWeight.bold : FontWeight.w500,
-                                      color: textColor,
-                                    ),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      if (isSelected) const Icon(Icons.check_circle_rounded, size: 14, color: Colors.white),
+                                      if (isBlocked) const Icon(Icons.build_rounded, size: 13, color: AppColors.textPrimary),
+                                      if (isOccupied && !isBlocked) const Icon(Icons.lock_rounded, size: 13, color: AppColors.error),
+                                      if (isSelected || isOccupied || isBlocked) const SizedBox(width: 4),
+                                      Text(
+                                        slotTime,
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: isSelected || isOccupied || isBlocked ? FontWeight.bold : FontWeight.w600,
+                                          color: textColor,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  if (isOccupied) ...[
-                                    const SizedBox(height: 1),
+                                  if (isBlocked) ...[
+                                    const SizedBox(height: 2),
                                     const Text(
-                                      'Terisi',
+                                      'DIBLOKIR',
                                       style: TextStyle(
                                         fontSize: 9,
-                                        color: Colors.grey,
-                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.textPrimary,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ] else if (isOccupied) ...[
+                                    const SizedBox(height: 2),
+                                    const Text(
+                                      'Dibooking',
+                                      style: TextStyle(
+                                        fontSize: 9,
+                                        color: AppColors.error,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                   ],
@@ -438,15 +505,15 @@ class _BookingSlotScreenState extends State<BookingSlotScreen> {
                 ),
               ),
 
-              // Bottom Navigation bar with summary & button
+              // Sticky Bottom Navigation Bar with summary & gradient CTA button
               Container(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                 decoration: BoxDecoration(
                   color: AppColors.surface,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.06),
-                      blurRadius: 10,
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 12,
                       offset: const Offset(0, -4),
                     ),
                   ],
@@ -454,56 +521,99 @@ class _BookingSlotScreenState extends State<BookingSlotScreen> {
                 child: SafeArea(
                   child: Row(
                     children: [
-                      Expanded(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Total Biaya',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: AppColors.textSecondary,
-                              ),
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _selectedStartTime == null
+                                ? 'Total Biaya'
+                                : '${_selectedStartTime!} - ${_calculateEndTime(_selectedStartTime!, _selectedDuration)} WIB',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: AppColors.textSecondary,
                             ),
-                            const SizedBox(height: 2),
-                            Text(
-                              _selectedStartTime == null
-                                  ? 'Pilih Jam'
-                                  : CurrencyFormatter.formatRupiah(widget.court.pricePerHour * _selectedDuration),
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.primary,
-                              ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            _selectedStartTime == null
+                                ? 'Pilih Jam'
+                                : CurrencyFormatter.formatRupiah(widget.court.pricePerHour * _selectedDuration),
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primary,
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
+                      const SizedBox(width: 16),
                       Expanded(
-                        child: CustomButton(
-                          text: 'Lanjut',
-                          icon: Icons.arrow_forward,
-                          onPressed: _selectedStartTime == null
-                              ? null
-                              : () {
-                                  final endTime = _calculateEndTime(_selectedStartTime!, _selectedDuration);
-                                  final totalPrice = widget.court.pricePerHour * _selectedDuration;
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: _selectedStartTime == null
+                                ? null
+                                : const LinearGradient(
+                                    colors: [AppColors.primaryDark, AppColors.primary],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                            color: _selectedStartTime == null ? Colors.grey.shade300 : null,
+                            borderRadius: BorderRadius.circular(14),
+                            boxShadow: _selectedStartTime == null
+                                ? null
+                                : [
+                                    BoxShadow(
+                                      color: AppColors.primary.withValues(alpha: 0.35),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: _selectedStartTime == null
+                                  ? null
+                                  : () {
+                                      final endTime = _calculateEndTime(_selectedStartTime!, _selectedDuration);
+                                      final totalPrice = widget.court.pricePerHour * _selectedDuration;
 
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => BookingSummaryScreen(
-                                        court: widget.court,
-                                        bookingDate: _selectedDate,
-                                        startTime: _selectedStartTime!,
-                                        endTime: endTime,
-                                        durationHours: _selectedDuration,
-                                        totalPrice: totalPrice,
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => BookingSummaryScreen(
+                                            court: widget.court,
+                                            bookingDate: _selectedDate,
+                                            startTime: _selectedStartTime!,
+                                            endTime: endTime,
+                                            durationHours: _selectedDuration,
+                                            totalPrice: totalPrice,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                              borderRadius: BorderRadius.circular(14),
+                              child: const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 14),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      'Lanjut ke Ringkasan',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
                                       ),
                                     ),
-                                  );
-                                },
+                                    SizedBox(width: 6),
+                                    Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 16),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -517,16 +627,16 @@ class _BookingSlotScreenState extends State<BookingSlotScreen> {
     );
   }
 
-  Widget _buildLegendItem(Color color, String label, {bool hasBorder = false}) {
+  Widget _buildLegendItem(Color color, String label, {bool hasBorder = false, Color? borderColor}) {
     return Row(
       children: [
         Container(
-          width: 12,
-          height: 12,
+          width: 10,
+          height: 10,
           decoration: BoxDecoration(
             color: color,
             borderRadius: BorderRadius.circular(3),
-            border: hasBorder ? Border.all(color: AppColors.border) : null,
+            border: hasBorder ? Border.all(color: borderColor ?? AppColors.border) : null,
           ),
         ),
         const SizedBox(width: 4),

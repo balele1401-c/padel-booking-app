@@ -5,7 +5,7 @@ class UserModel {
   final String name;
   final String email;
   final String phoneNumber;
-  final String role; // 'customer' or 'admin'
+  final String role; // 'customer', 'admin', 'superadmin'
   final DateTime? createdAt;
 
   UserModel({
@@ -17,16 +17,24 @@ class UserModel {
     this.createdAt,
   });
 
-  bool get isAdmin => role == 'admin';
+  /// Check if user has Admin or Superadmin privileges (case-insensitive & trimmed)
+  bool get isAdmin {
+    final cleanRole = role.trim().toLowerCase();
+    return cleanRole == 'admin' || cleanRole == 'superadmin';
+  }
 
   factory UserModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>? ?? {};
+
+    // Robust parsing for role
+    final rawRole = data['role']?.toString().trim() ?? 'customer';
+
     return UserModel(
       id: doc.id,
       name: data['nama'] ?? data['name'] ?? '',
       email: data['email'] ?? '',
       phoneNumber: data['no_hp'] ?? data['phoneNumber'] ?? '',
-      role: data['role'] ?? 'customer',
+      role: rawRole,
       createdAt: data['created_at'] != null
           ? (data['created_at'] as Timestamp).toDate()
           : null,
