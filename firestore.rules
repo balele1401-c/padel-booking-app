@@ -9,7 +9,7 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Check if request user matches document owner
+    // Check if request user matches given userId
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
@@ -23,8 +23,8 @@ service cloud.firestore {
 
     // ─── 1. Users Collection ────────────────────────────────────────────────
     match /users/{userId} {
-      // Customer can read and write only their own document
-      allow read, update: if isOwner(userId) || isAdmin();
+      allow read: if isSignedIn();
+      allow update: if isOwner(userId) || isAdmin();
       allow create: if isSignedIn();
       allow delete: if isAdmin();
     }
@@ -33,28 +33,26 @@ service cloud.firestore {
     match /courts/{courtId} {
       // Public read access for court listings and prices
       allow read: if true;
-      
-      // Write operations (create, update, delete) restricted to Admin
       allow create, update, delete: if isAdmin();
     }
 
     // ─── 3. Bookings Collection ─────────────────────────────────────────────
     match /bookings/{bookingId} {
-      // Read access: User can read their own bookings; Admin can read all bookings
-      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      // Read access: Allowed if document doesn't exist yet (for availability checks), or user is owner/admin
+      allow read: if isSignedIn() && (
+        resource == null || resource.data.userId == request.auth.uid || isAdmin()
+      );
 
-      // Create access: Signed-in user creating a booking for themselves with initial 'pending' status
+      // Create access: Signed-in user creating a booking for themselves or Admin
       allow create: if isSignedIn() && (
         request.resource.data.userId == request.auth.uid || isAdmin()
       );
 
-      // Update access:
-      // - Customer can ONLY cancel their own booking (cannot change status to confirmed/completed)
-      // - Admin can update any booking field (confirm, cancel, mark completed, block slot)
+      // Update access: Customer can cancel own booking, Admin can update anything
       allow update: if isAdmin() || (
+        resource != null &&
         isOwner(resource.data.userId) &&
-        request.resource.data.status == 'cancelled' &&
-        request.resource.data.payment_status == resource.data.payment_status
+        request.resource.data.status == 'cancelled'
       );
 
       // Delete access: Admin only (for unblocking maintenance slots)
@@ -63,10 +61,9 @@ service cloud.firestore {
 
     // ─── 4. Payments Collection ─────────────────────────────────────────────
     match /payments/{paymentId} {
-      // User can read their own payment receipt; Admin can read all payments
-      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
-      
-      // Create and Update: Admin or authenticated client processing Midtrans payment
+      allow read: if isSignedIn() && (
+        resource == null || resource.data.userId == request.auth.uid || isAdmin()
+      );
       allow create, update: if isSignedIn();
       allow delete: if isAdmin();
     }
