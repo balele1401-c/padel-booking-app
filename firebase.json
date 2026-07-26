@@ -1,1 +1,42 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"padel-booking-app-1504d","appId":"1:870158974038:android:11dae37ce31c887559cff7","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"padel-booking-app-1504d","configurations":{"android":"1:870158974038:android:11dae37ce31c887559cff7","ios":"1:870158974038:ios:c757a8cb2c94bf2359cff7","macos":"1:870158974038:ios:c757a8cb2c94bf2359cff7","web":"1:870158974038:web:d7401d312570d4f059cff7","windows":"1:870158974038:web:77b8f2bbb7ea70e659cff7"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "padel-booking-app-1504d",
+          "appId": "1:870158974038:android:11dae37ce31c887559cff7",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "padel-booking-app-1504d",
+          "configurations": {
+            "android": "1:870158974038:android:11dae37ce31c887559cff7",
+            "ios": "1:870158974038:ios:c757a8cb2c94bf2359cff7",
+            "macos": "1:870158974038:ios:c757a8cb2c94bf2359cff7",
+            "web": "1:870158974038:web:d7401d312570d4f059cff7",
+            "windows": "1:870158974038:web:77b8f2bbb7ea70e659cff7"
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}
