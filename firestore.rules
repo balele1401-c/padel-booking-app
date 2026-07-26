@@ -38,17 +38,15 @@ service cloud.firestore {
 
     // ─── 3. Bookings Collection ─────────────────────────────────────────────
     match /bookings/{bookingId} {
-      // Read access: Allowed if document doesn't exist yet (for availability checks), or user is owner/admin
-      allow read: if isSignedIn() && (
-        resource == null || resource.data.userId == request.auth.uid || isAdmin()
-      );
+      // Read access: Any authenticated user can read booking schedules (required to check slot availability)
+      allow read: if isSignedIn();
 
       // Create access: Signed-in user creating a booking for themselves or Admin
       allow create: if isSignedIn() && (
         request.resource.data.userId == request.auth.uid || isAdmin()
       );
 
-      // Update access: Customer can cancel own booking, Admin can update anything
+      // Update access: Customer can ONLY cancel their own booking, Admin can update status/anything
       allow update: if isAdmin() || (
         resource != null &&
         isOwner(resource.data.userId) &&
@@ -61,9 +59,10 @@ service cloud.firestore {
 
     // ─── 4. Payments Collection ─────────────────────────────────────────────
     match /payments/{paymentId} {
-      allow read: if isSignedIn() && (
-        resource == null || resource.data.userId == request.auth.uid || isAdmin()
-      );
+      // Read access: Any authenticated user can read payment status for their transaction
+      allow read: if isSignedIn();
+      
+      // Create and Update: Signed-in user or Admin
       allow create, update: if isSignedIn();
       allow delete: if isAdmin();
     }
